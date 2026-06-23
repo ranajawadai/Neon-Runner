@@ -792,8 +792,7 @@ function animate() {
         if (Math.abs(c.position.x - px) < 0.8 && Math.abs(c.position.y - py) < 0.85) {
           spawnParticleBurst(c.position.x, c.position.y, c.position.z, 0xffe14d);
           sfxCoin();
-          triggerFlash(0xffffff, 0.15, 100);
-          c.visible = false;
+          scene.remove(c);
           coins.splice(i, 1);
           state.coins++;
           state.combo++;
@@ -872,15 +871,12 @@ function animate() {
       playTone(880, 0.15, 'sine', 0.2);
     }
 
-    // Near-miss flash (obstacle passes very close)
+    // Near-miss detection (no flash)
     obstacles.forEach(o => {
       const dx = Math.abs(o.position.x - px);
       const dz2 = Math.abs(o.position.z - pz);
       if (dx < 1.2 && dz2 < 1.5 && dx > 0.7) {
-        if (!o.userData.nearMissed) {
-          o.userData.nearMissed = true;
-          triggerFlash(0xff0000, 0.2, 150);
-        }
+        o.userData.nearMissed = true;
       }
     });
   } else {
