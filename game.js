@@ -69,6 +69,10 @@ const state = {
 let lastCombo = 0;
 let laneVelocity = 0;
 
+// death animation
+let deathAnimTime = 0;
+const DEATH_ANIM_DURATION = 1.5;
+
 // jump physics
 let velocityY = 0;
 const GRAVITY = -38;
@@ -968,7 +972,20 @@ function animate() {
       }
     });
   } else {
-    player.rotation.y += dt * 0.8;
+    if (state.gameOver && deathAnimTime < DEATH_ANIM_DURATION) {
+      deathAnimTime += dt;
+      const t = deathAnimTime / DEATH_ANIM_DURATION;
+      player.rotation.y += dt * 15 * (1 - t);
+      player.rotation.x += dt * 8 * (1 - t);
+      player.position.y -= dt * 3 * t;
+      player.material.opacity = 1 - t;
+      player.material.transparent = true;
+      if (t >= 1) {
+        player.visible = false;
+      }
+    } else {
+      player.rotation.y += dt * 0.8;
+    }
   }
 
   updateParticles(dt);
@@ -991,6 +1008,8 @@ function animate() {
 function endGame() {
   state.gameOver = true;
   state.running = false;
+  deathAnimTime = 0;
+  player.visible = true;
   triggerShake(0.8, 0.6);
   triggerFlash(0xff0000, 0.5, 300);
 
@@ -999,9 +1018,6 @@ function endGame() {
   setTimeout(() => spawnParticleBurst(player.position.x + 0.5, player.position.y + 0.3, player.position.z, 0xff6600), 100);
   setTimeout(() => spawnParticleBurst(player.position.x - 0.5, player.position.y, player.position.z + 0.5, 0xff00ff), 200);
   setTimeout(() => spawnParticleBurst(player.position.x, player.position.y + 0.5, player.position.z - 0.3, 0x00ffff), 300);
-
-  // Hide player
-  player.visible = false;
 
   stopBGM();
   sfxDeath();
@@ -1259,6 +1275,9 @@ function startGame() {
   isJumping = false;
   player.position.set(0, GROUND_Y, 0);
   player.visible = true;
+  deathAnimTime = 0;
+  player.material.opacity = 1;
+  player.material.transparent = false;
   spawnTimer = 0.5;
 
   applyTheme(state.theme);
