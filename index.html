@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Neon Runner — 3D Endless Runner</title>
+  <meta name="description" content="Dodge obstacles, collect coins, survive. A cyberpunk 3D endless runner built with Three.js." />
+  <meta name="theme-color" content="#0a0a1a" />
+
+  <meta property="og:title" content="Neon Runner" />
+  <meta property="og:description" content="Cyberpunk 3D endless runner. Dodge. Collect. Survive." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Neon Runner" />
+  <meta name="twitter:description" content="Cyberpunk 3D endless runner. Dodge. Collect. Survive." />
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏃</text></svg>" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="overlay">
+      <div class="loading-content">
+        <h1 class="title small">NEON<span>RUNNER</span></h1>
+        <div class="loading-bar-container">
+          <div id="loading-bar" class="loading-bar"></div>
+        </div>
+        <p id="loading-text" class="loading-text">Loading assets...</p>
+      </div>
+    </div>
+
+    <!-- HUD -->
+    <div id="hud" class="hidden">
+      <div class="hud-item">
+        <span class="hud-label">SCORE</span>
+        <span id="score" class="hud-value">0</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">COINS</span>
+        <span id="coins" class="hud-value">0</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-label">SPEED</span>
+        <span id="speed" class="hud-value">1.0x</span>
+      </div>
+      <div class="hud-right">
+        <button id="pause-btn" class="hud-btn" title="Pause (ESC)">⏸</button>
+        <button id="settings-btn" class="hud-btn" title="Settings">⚙</button>
+      </div>
+    </div>
+
+    <!-- Start Screen -->
+    <div id="start-screen" class="overlay hidden">
+      <h1 class="title">NEON<span>RUNNER</span></h1>
+      <p class="subtitle">Dodge obstacles. Collect coins. Survive.</p>
+      <button id="start-btn" class="btn">START</button>
+      <div class="controls-hint">
+        <p><strong>CONTROLS</strong></p>
+        <p>← → / A D : Switch lanes</p>
+        <p>Space / ↑ / W : Jump</p>
+        <p>ESC : Pause</p>
+        <p>Mobile: Swipe to move, Tap to jump</p>
+      </div>
+    </div>
+
+    <!-- Pause Screen -->
+    <div id="pause-screen" class="overlay hidden">
+      <h1 class="title small">PAUSED</h1>
+      <button id="resume-btn" class="btn">RESUME</button>
+      <button id="pause-settings-btn" class="btn secondary">SETTINGS</button>
+      <button id="quit-btn" class="btn secondary">QUIT</button>
+    </div>
+
+    <!-- Settings Screen -->
+    <div id="settings-screen" class="overlay hidden">
+      <h1 class="title small">SETTINGS</h1>
+      <div class="settings-panel">
+        <div class="setting-row">
+          <label>Music Volume</label>
+          <input id="music-volume" type="range" min="0" max="100" value="50" />
+          <span id="music-volume-val">50%</span>
+        </div>
+        <div class="setting-row">
+          <label>SFX Volume</label>
+          <input id="sfx-volume" type="range" min="0" max="100" value="70" />
+          <span id="sfx-volume-val">70%</span>
+        </div>
+        <div class="setting-row">
+          <label>Sensitivity</label>
+          <input id="sensitivity" type="range" min="1" max="10" value="5" />
+          <span id="sensitivity-val">5</span>
+        </div>
+      </div>
+      <button id="settings-back-btn" class="btn">BACK</button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="game-over-screen" class="overlay hidden">
+      <h1 class="title small">GAME OVER</h1>
+      <div class="final-stats">
+        <div class="stat-row"><span>Score</span><span id="final-score">0</span></div>
+        <div class="stat-row"><span>Coins</span><span id="final-coins">0</span></div>
+        <div class="stat-row"><span>Best</span><span id="best-score">0</span></div>
+      </div>
+      <button id="restart-btn" class="btn">PLAY AGAIN</button>
+    </div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+  <script type="module" src="game.js"></script>
+</body>
+</html>
