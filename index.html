@@ -32,7 +32,7 @@
     </div>
 
     <!-- HUD -->
-    <div id="hud" class="hidden">
+    <div id="hud" class="hidden" role="status" aria-label="Game status">
       <div class="hud-item">
         <span class="hud-label">SCORE</span>
         <span id="score" class="hud-value">0</span>
@@ -51,8 +51,8 @@
       </div>
       <div class="hud-right">
         <span id="fps-counter" class="fps-badge">60 FPS</span>
-        <button id="pause-btn" class="hud-btn" title="Pause (ESC)">⏸</button>
-        <button id="settings-btn" class="hud-btn" title="Settings">⚙</button>
+        <button id="pause-btn" class="hud-btn" title="Pause (ESC)" aria-label="Pause game">⏸</button>
+        <button id="settings-btn" class="hud-btn" title="Settings" aria-label="Open settings">⚙</button>
       </div>
     </div>
     <div id="near-miss-overlay" class="near-miss-flash"></div>
@@ -79,7 +79,7 @@
         <span id="menu-games" class="stat-chip">🎮 Games: 0</span>
       </div>
 
-      <button id="start-btn" class="btn">START</button>
+      <button id="start-btn" class="btn" aria-label="Start game">START</button>
       <button id="achievements-btn" class="btn secondary small">ACHIEVEMENTS</button>
 
       <div class="fps-info">
@@ -94,7 +94,7 @@
     </div>
 
     <!-- Pause Screen -->
-    <div id="pause-screen" class="overlay hidden">
+    <div id="pause-screen" class="overlay hidden" role="dialog" aria-label="Game paused">
       <h1 class="title small">PAUSED</h1>
       <button id="resume-btn" class="btn">RESUME</button>
       <button id="pause-settings-btn" class="btn secondary">SETTINGS</button>
@@ -126,7 +126,7 @@
     </div>
 
     <!-- Game Over Screen -->
-    <div id="game-over-screen" class="overlay hidden">
+    <div id="game-over-screen" class="overlay hidden" role="dialog" aria-label="Game over">
       <h1 class="title small">GAME OVER</h1>
       <div class="final-stats">
         <div class="stat-row"><span>Score</span><span id="final-score">0</span></div>
@@ -134,7 +134,7 @@
         <div class="stat-row"><span>Best</span><span id="best-score">0</span></div>
         <div class="stat-row"><span>Daily Best</span><span id="final-daily">0</span></div>
       </div>
-      <button id="restart-btn" class="btn">PLAY AGAIN</button>
+      <button id="restart-btn" class="btn" aria-label="Play again">PLAY AGAIN</button>
     </div>
 
     <!-- Achievements Screen -->

@@ -556,3 +556,96 @@ input[type="range"]:hover {
   0% { left: -100%; }
   100% { left: 100%; }
 }
+
+/* Mobile-specific scaling */
+@media (max-width: 600px) {
+  .title {
+    font-size: 48px;
+    letter-spacing: 4px;
+  }
+
+  .title.small {
+    font-size: 32px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+  }
+
+  .btn {
+    padding: 16px 48px;
+    font-size: 16px;
+    min-width: 120px;
+  }
+
+  .btn.small {
+    padding: 10px 20px;
+    font-size: 12px;
+  }
+
+  .hud-value {
+    font-size: 24px;
+  }
+
+  .hud-label {
+    font-size: 8px;
+  }
+
+  .selector-btn {
+    width: 42px;
+    height: 42px;
+  }
+
+  .stat-chip {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .settings-panel {
+    min-width: 280px;
+  }
+
+  .final-stats {
+    min-width: 200px;
+  }
+
+  .stat-row {
+    font-size: 14px;
+  }
+
+  .controls-hint {
+    font-size: 10px;
+  }
+
+  .fps-big {
+    font-size: 28px;
+  }
+
+  .fps-label {
+    font-size: 12px;
+  }
+}
+
+/* Accessibility: reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Accessibility: high contrast */
+@media (prefers-contrast: high) {
+  .btn {
+    border: 2px solid #fff;
+  }
+
+  .hud-value {
+    text-shadow: none;
+  }
+
+  .title {
+    text-shadow: none;
+  }
+}
