@@ -167,6 +167,7 @@ const DESPAWN_Z = 8;
 init();
 
 function init() {
+  console.log('=== DEBUG: init() started ===');
   console.log('THREE loaded:', typeof THREE !== 'undefined');
   
   scene = new THREE.Scene();
@@ -177,11 +178,23 @@ function init() {
   camera.position.set(0, 3.4, 7);
   camera.lookAt(0, 1, -8);
 
+  const container = document.getElementById('game-container');
+  console.log('container:', container ? 'found' : 'NULL');
+  
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.domElement.style.display = 'block';
-  document.getElementById('game-container').prepend(renderer.domElement);
+  renderer.domElement.style.position = 'absolute';
+  renderer.domElement.style.top = '0';
+  renderer.domElement.style.left = '0';
+  renderer.domElement.style.zIndex = '0';
+  container.prepend(renderer.domElement);
+  
+  console.log('canvas:', renderer.domElement);
+  console.log('canvas parent:', renderer.domElement.parentElement);
+  const cs = getComputedStyle(renderer.domElement);
+  console.log('canvas CSS: w=' + cs.width + ' h=' + cs.height + ' display=' + cs.display + ' position=' + cs.position + ' zIndex=' + cs.zIndex);
 
   clock = new THREE.Clock();
 
@@ -460,16 +473,13 @@ function animate() {
   requestAnimationFrame(animate);
   const dt = Math.min(clock.getDelta(), 0.05);
 
-  if (state.running && !state.gameOver && !state.isPaused) {
+  // Frame-by-frame debug (first 10 frames only)
+  if (gameTime < 10) {
     gameTime++;
-    if (gameTime === 3) {
-      console.log('scene.children:', scene.children.length);
-      console.log('renderer.info:', JSON.stringify(renderer.info.render));
-      console.log('camera pos:', camera.position.x, camera.position.y, camera.position.z);
-      console.log('player pos:', player.position.x, player.position.y, player.position.z);
-      console.log('player visible:', player.visible);
-      console.log('fog:', scene.fog ? scene.fog.near + '-' + scene.fog.far : 'none');
-    }
+    console.log('frame ' + gameTime + ': running=' + state.running + ' children=' + scene.children.length + ' drawCalls=' + renderer.info.render.calls);
+  }
+
+  if (state.running && !state.gameOver && !state.isPaused) {
 
     state.speed = Math.min(state.maxSpeed, state.speed + 0.25 * dt);
     state.score += state.speed * dt;
