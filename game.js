@@ -177,9 +177,11 @@ function init() {
   camera.position.set(0, 3.4, 7);
   camera.lookAt(0, 1, -8);
 
-  renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('game-canvas'), antialias: true });
+  renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.domElement.style.display = 'block';
+  document.getElementById('game-container').prepend(renderer.domElement);
 
   clock = new THREE.Clock();
 
@@ -659,7 +661,7 @@ function setupInput() {
   });
 
   let touchStartX = 0, touchStartY = 0, touchStartT = 0;
-  const canvas = document.getElementById('game-canvas');
+  const canvas = renderer.domElement;
   canvas.addEventListener('touchstart', (e) => {
     const t = e.touches[0];
     touchStartX = t.clientX;
