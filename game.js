@@ -67,6 +67,7 @@ const state = {
   dailyBest: Number(localStorage.getItem('neonRunnerDaily_' + new Date().toDateString()) || '0')
 };
 let lastCombo = 0;
+let laneVelocity = 0;
 
 // jump physics
 let velocityY = 0;
@@ -788,7 +789,12 @@ function animate() {
     updateHUD();
 
     targetX = LANES[currentLane];
-    player.position.x += (targetX - player.position.x) * Math.min(1, dt * 12);
+    const laneSpring = 25;
+    const laneDamping = 0.85;
+    const laneForce = (targetX - player.position.x) * laneSpring;
+    laneVelocity += laneForce * dt;
+    laneVelocity *= laneDamping;
+    player.position.x += laneVelocity;
 
     if (isJumping || player.position.y > GROUND_Y + 0.001) {
       velocityY += GRAVITY * dt;
@@ -1248,6 +1254,7 @@ function startGame() {
   localStorage.setItem('neonRunnerGames', state.gamesPlayed);
   lastMilestone = 0;
   currentLane = 1;
+  laneVelocity = 0;
   velocityY = 0;
   isJumping = false;
   player.position.set(0, GROUND_Y, 0);
