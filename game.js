@@ -1182,10 +1182,15 @@ function renderAchievements() {
 }
 
 function showScreen(id) {
-  ['loading-screen', 'start-screen', 'pause-screen', 'settings-screen', 'game-over-screen'].forEach(s => {
-    document.getElementById(s).classList.add('hidden');
-  });
-  if (id) document.getElementById(id).classList.remove('hidden');
+  const transition = document.getElementById('screen-transition');
+  transition.classList.add('active');
+  setTimeout(() => {
+    ['loading-screen', 'start-screen', 'pause-screen', 'settings-screen', 'game-over-screen', 'achievements-screen'].forEach(s => {
+      document.getElementById(s).classList.add('hidden');
+    });
+    if (id) document.getElementById(id).classList.remove('hidden');
+    transition.classList.remove('active');
+  }, 250);
 }
 
 let previousScreen = 'start-screen';
