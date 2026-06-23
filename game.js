@@ -459,7 +459,6 @@ function animate() {
   const dt = Math.min(clock.getDelta(), 0.05);
 
   if (state.running && !state.gameOver && !state.isPaused) {
-    if (gameTime === undefined) { gameTime = 0; }
     gameTime++;
     if (gameTime === 3) {
       console.log('scene.children:', scene.children.length);
@@ -470,7 +469,6 @@ function animate() {
       console.log('fog:', scene.fog ? scene.fog.near + '-' + scene.fog.far : 'none');
     }
 
-  if (state.running && !state.gameOver && !state.isPaused) {
     state.speed = Math.min(state.maxSpeed, state.speed + 0.25 * dt);
     state.score += state.speed * dt;
     updateHUD();
