@@ -214,6 +214,7 @@ function init() {
   setupUI();
   initAudio();
 
+  animate();
   simulateLoading();
 }
 
