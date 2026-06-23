@@ -80,6 +80,46 @@ let spawnTimer = 0;
 const gridStartZ = -150;
 const cellSize = 4;
 
+// object pools
+const obstaclePool = [];
+const coinPool = [];
+const OBSTACLE_POOL_SIZE = 30;
+const COIN_POOL_SIZE = 40;
+
+function getFromPool(pool, createFn) {
+  for (let i = 0; i < pool.length; i++) {
+    if (!pool[i].visible) return pool[i];
+  }
+  const obj = createFn();
+  pool.push(obj);
+  return obj;
+}
+
+function resetObstacle(mesh, x) {
+  const geo = OBSTACLE_GEOMETRIES[Math.floor(Math.random() * OBSTACLE_GEOMETRIES.length)];
+  mesh.geometry.dispose();
+  mesh.geometry = geo;
+  mesh.position.set(x, 0.6, -80);
+  mesh.visible = true;
+  mesh.userData.moving = Math.random() < 0.3;
+  mesh.userData.shifted = false;
+  mesh.userData.nearMissed = false;
+  if (mesh.userData.moving) {
+    mesh.material = obstacleMat.clone();
+    mesh.material.emissive.set(0xff6600);
+  } else {
+    mesh.material = obstacleMat;
+  }
+  return mesh;
+}
+
+function resetCoin(mesh, x, offsetZ) {
+  mesh.position.set(x, 0.9, -80 - offsetZ);
+  mesh.visible = true;
+  mesh.rotation.set(0, 0, 0);
+  return mesh;
+}
+
 // moving obstacles
 let moveObstacleTimer = 0;
 const MOVE_OBSTACLE_INTERVAL = 2;
@@ -251,6 +291,7 @@ function init() {
 
   animate();
   simulateLoading();
+  createMobileIndicators();
 }
 
 function simulateLoading() {
@@ -625,26 +666,25 @@ function spawn() {
 }
 
 function spawnObstacle(x) {
-  const geo = OBSTACLE_GEOMETRIES[Math.floor(Math.random() * OBSTACLE_GEOMETRIES.length)];
-  const m = new THREE.Mesh(geo, obstacleMat);
-  m.position.set(x, 0.6, -80);
-  m.userData.moving = Math.random() < 0.3;
-  m.userData.shifted = false;
-  m.userData.nearMissed = false;
-  if (m.userData.moving) {
-    m.material = obstacleMat.clone();
-    m.material.emissive.set(0xff6600);
-  }
-  scene.add(m);
+  const m = getFromPool(obstaclePool, () => {
+    const geo = OBSTACLE_GEOMETRIES[0];
+    const mesh = new THREE.Mesh(geo, obstacleMat);
+    scene.add(mesh);
+    return mesh;
+  });
+  resetObstacle(m, x);
   obstacles.push(m);
 }
 
 function spawnCoinLine(x) {
   const count = 3 + Math.floor(Math.random() * 4);
   for (let i = 0; i < count; i++) {
-    const c = new THREE.Mesh(COIN_GEOMETRY, coinMat);
-    c.position.set(x, 0.9, -80 - i * 1.8);
-    scene.add(c);
+    const c = getFromPool(coinPool, () => {
+      const mesh = new THREE.Mesh(COIN_GEOMETRY, coinMat);
+      scene.add(mesh);
+      return mesh;
+    });
+    resetCoin(c, x, i * 1.8);
     coins.push(c);
   }
 }
@@ -716,7 +756,7 @@ function animate() {
           state.shieldTimer = 0;
           spawnParticleBurst(o.position.x, o.position.y, o.position.z, 0x00ff88);
           scene.remove(o);
-          o.geometry.dispose();
+          o.visible = false;
           obstacles.splice(i, 1);
           continue;
         }
@@ -753,7 +793,7 @@ function animate() {
           spawnParticleBurst(c.position.x, c.position.y, c.position.z, 0xffe14d);
           sfxCoin();
           triggerFlash(0xffffff, 0.15, 100);
-          scene.remove(c);
+          c.visible = false;
           coins.splice(i, 1);
           state.coins++;
           state.combo++;
@@ -764,8 +804,7 @@ function animate() {
         }
       }
       if (c.position.z > DESPAWN_Z) {
-        scene.remove(c);
-        c.geometry.dispose();
+        c.visible = false;
         coins.splice(i, 1);
         state.combo = 0;
         state.multiplier = 1;
@@ -880,6 +919,8 @@ function endGame() {
     localStorage.setItem('neonRunnerDaily_' + new Date().toDateString(), state.dailyBest);
   }
   checkAchievements();
+  updateAnalytics();
+  showShareButton();
   document.getElementById('final-score').textContent = Math.floor(state.score);
   document.getElementById('final-coins').textContent = state.coins;
   document.getElementById('best-score').textContent = state.best;
@@ -927,13 +968,14 @@ function setupInput() {
     const elapsed = Date.now() - touchStartT;
     const absX = Math.abs(dx), absY = Math.abs(dy);
     if (absX < 24 && absY < 24 && elapsed < 250) {
-      if (!isJumping) { velocityY = JUMP_FORCE; isJumping = true; sfxJump(); }
+      if (!isJumping) { velocityY = JUMP_FORCE; isJumping = true; sfxJump(); flashMobileIndicator('mi-jump'); }
     } else if (absX > absY) {
-      if (dx > 0) currentLane = Math.min(2, currentLane + 1);
-      else currentLane = Math.max(0, currentLane - 1);
+      if (dx > 0) { currentLane = Math.min(2, currentLane + 1); flashMobileIndicator('mi-right'); }
+      else { currentLane = Math.max(0, currentLane - 1); flashMobileIndicator('mi-left'); }
     } else if (dy < 0) {
-      if (!isJumping) { velocityY = JUMP_FORCE; isJumping = true; sfxJump(); }
+      if (!isJumping) { velocityY = JUMP_FORCE; isJumping = true; sfxJump(); flashMobileIndicator('mi-jump'); }
     }
+    if (navigator.vibrate) navigator.vibrate(15);
   }, { passive: true });
 }
 
@@ -943,7 +985,10 @@ function setupUI() {
   document.getElementById('best-score').textContent = state.best;
 
   document.getElementById('pause-btn').addEventListener('click', togglePause);
-  document.getElementById('settings-btn').addEventListener('click', () => showScreen('settings-screen'));
+  document.getElementById('settings-btn').addEventListener('click', () => {
+    document.getElementById('analytics-display').innerHTML = getAnalyticsHTML();
+    showScreen('settings-screen');
+  });
   document.getElementById('resume-btn').addEventListener('click', togglePause);
   document.getElementById('pause-settings-btn').addEventListener('click', () => showScreen('settings-screen'));
   document.getElementById('quit-btn').addEventListener('click', quitToMenu);
@@ -1081,9 +1126,9 @@ function quitToMenu() {
   state.gameOver = false;
   state.isPaused = false;
   stopBGM();
-  obstacles.forEach(o => { scene.remove(o); o.geometry.dispose(); });
+  obstacles.forEach(o => { o.visible = false; });
   obstacles = [];
-  coins.forEach(c => { scene.remove(c); c.geometry.dispose(); });
+  coins.forEach(c => { c.visible = false; });
   coins = [];
   particles.forEach(p => { scene.remove(p); p.geometry.dispose(); p.material.dispose(); });
   particles.length = 0;
@@ -1117,9 +1162,9 @@ function startGame() {
 
   applyTheme(state.theme);
 
-  obstacles.forEach(o => { scene.remove(o); o.geometry.dispose(); });
+  obstacles.forEach(o => { o.visible = false; });
   obstacles = [];
-  coins.forEach(c => { scene.remove(c); c.geometry.dispose(); });
+  coins.forEach(c => { c.visible = false; });
   coins = [];
   particles.forEach(p => { scene.remove(p); p.geometry.dispose(); p.material.dispose(); });
   particles.length = 0;
@@ -1154,4 +1199,79 @@ function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+// === MOBILE SWIPE INDICATORS ===
+function createMobileIndicators() {
+  if (!('ontouchstart' in window)) return;
+  const indicators = document.createElement('div');
+  indicators.id = 'mobile-indicators';
+  indicators.innerHTML = '<div id="mi-left" class="mi">◀</div><div id="mi-right" class="mi">▶</div><div id="mi-jump" class="mi">▲</div>';
+  indicators.style.cssText = 'position:fixed;bottom:20px;left:0;right:0;display:flex;justify-content:center;gap:20px;z-index:50;pointer-events:none;';
+  document.body.appendChild(indicators);
+  document.querySelectorAll('.mi').forEach(el => {
+    el.style.cssText = 'width:60px;height:60px;border-radius:50%;background:rgba(0,255,255,0.15);border:2px solid rgba(0,255,255,0.3);display:flex;align-items:center;justify-content:center;font-size:24px;color:rgba(0,255,255,0.5);';
+  });
+}
+
+function flashMobileIndicator(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.background = 'rgba(0,255,255,0.4)';
+  el.style.borderColor = 'rgba(0,255,255,0.8)';
+  setTimeout(() => {
+    el.style.background = 'rgba(0,255,255,0.15)';
+    el.style.borderColor = 'rgba(0,255,255,0.3)';
+  }, 150);
+}
+
+// === SCREENSHOT / SHARE ===
+function captureScreenshot() {
+  renderer.render(scene, camera);
+  const link = document.createElement('a');
+  link.download = 'neonrunner-' + Math.floor(state.score) + '.png';
+  link.href = renderer.domElement.toDataURL('image/png');
+  link.click();
+}
+
+function showShareButton() {
+  const btn = document.createElement('button');
+  btn.textContent = '📸 SAVE SCREENSHOT';
+  btn.className = 'btn small';
+  btn.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:101;';
+  btn.addEventListener('click', () => {
+    captureScreenshot();
+    btn.remove();
+  });
+  document.body.appendChild(btn);
+  setTimeout(() => { if (btn.parentElement) btn.remove(); }, 5000);
+}
+
+// === ANALYTICS ===
+function loadAnalytics() {
+  return JSON.parse(localStorage.getItem('neonRunnerAnalytics') || '{"totalScore":0,"totalGames":0,"totalCoins":0,"bestDistance":0,"deathLanes":[0,0,0]}');
+}
+
+function saveAnalytics(data) {
+  localStorage.setItem('neonRunnerAnalytics', JSON.stringify(data));
+}
+
+function updateAnalytics() {
+  const a = loadAnalytics();
+  a.totalScore += state.score;
+  a.totalGames++;
+  a.totalCoins += state.coins;
+  const dist = Math.floor(state.score / 10);
+  if (dist > a.bestDistance) a.bestDistance = dist;
+  const laneIdx = LANES.indexOf(player.position.x);
+  if (laneIdx !== -1) a.deathLanes[laneIdx]++;
+  saveAnalytics(a);
+}
+
+function getAnalyticsHTML() {
+  const a = loadAnalytics();
+  const avg = a.totalGames > 0 ? Math.floor(a.totalScore / a.totalGames) : 0;
+  const favLane = a.deathLanes.indexOf(Math.max(...a.deathLanes));
+  const laneNames = ['Left', 'Center', 'Right'];
+  return '<div class="stats-panel"><div class="stat-row"><span>Avg Score</span><span>' + avg + '</span></div><div class="stat-row"><span>Total Games</span><span>' + a.totalGames + '</span></div><div class="stat-row"><span>Total Coins</span><span>' + a.totalCoins + '</span></div><div class="stat-row"><span>Best Distance</span><span>' + a.bestDistance + 'm</span></div><div class="stat-row"><span>Death Lane</span><span>' + laneNames[favLane] + '</span></div></div>';
 }
