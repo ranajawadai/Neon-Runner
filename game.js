@@ -258,7 +258,7 @@ init();
 function init() {
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0a0a1a);
-  scene.fog = new THREE.Fog(0x0a0a1a, 30, 200);
+  // No fog — clean view of stars + grid + objects
 
   camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 200);
   camera.position.set(0, 3.4, 7);
@@ -573,7 +573,6 @@ function applyTheme(themeId) {
   const t = THEMES[themeId];
   if (!t) return;
   scene.background = new THREE.Color(t.bg);
-  scene.fog = new THREE.Fog(t.fog, 30, 200);
   grid.material.color.set(t.gridA);
   grid.material.opacity = 0.35;
   obstacleMat.color.set(t.obstacle);
