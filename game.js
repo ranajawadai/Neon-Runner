@@ -758,6 +758,16 @@ function spawnPowerup() {
   powerups.push(m);
 }
 
+function showScoreFly(screenX, screenY, text) {
+  const el = document.createElement('div');
+  el.className = 'score-fly';
+  el.textContent = text;
+  el.style.left = screenX + 'px';
+  el.style.top = screenY + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 600);
+}
+
 function animate() {
   requestAnimationFrame(animate);
   const dt = Math.min(clock.getDelta(), 0.05);
@@ -848,6 +858,12 @@ function animate() {
         if (Math.abs(c.position.x - px) < 0.8 && Math.abs(c.position.y - py) < 0.85) {
           spawnParticleBurst(c.position.x, c.position.y, c.position.z, 0xffe14d, 10);
           sfxCoin();
+          const vec = new THREE.Vector3(c.position.x, c.position.y, c.position.z);
+          vec.project(camera);
+          const sx = (vec.x * 0.5 + 0.5) * window.innerWidth;
+          const sy = (-vec.y * 0.5 + 0.5) * window.innerHeight;
+          const pts = Math.floor(10 * state.multiplier);
+          showScoreFly(sx, sy, '+' + pts);
           scene.remove(c);
           coins.splice(i, 1);
           state.coins++;

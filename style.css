@@ -428,3 +428,19 @@ body {
 .near-miss-flash.active {
   opacity: 1;
 }
+
+.score-fly {
+  position: fixed;
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffe14d;
+  text-shadow: 0 0 10px rgba(255, 225, 77, 0.6);
+  pointer-events: none;
+  z-index: 25;
+  animation: scoreFly 0.6s ease-out forwards;
+}
+
+@keyframes scoreFly {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-40px) scale(1.3); opacity: 0; }
+}
