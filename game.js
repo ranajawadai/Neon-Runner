@@ -8,6 +8,10 @@ let coins = [];
 let speedLines = [];
 let powerups = [];
 
+const LANES = [-2.2, 0, 2.2];
+let currentLane = 1;
+let targetX = 0;
+
 const POWERUP_TYPES = [
   { type: 'magnet', color: 0xff00ff, label: 'M' },
   { type: 'shield', color: 0x00ff88, label: 'S' },
