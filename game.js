@@ -1279,9 +1279,17 @@ function updateHUD() {
   document.getElementById('score').textContent = Math.floor(state.score);
   document.getElementById('coins').textContent = state.coins;
   const speedStr = (state.speed / state.baseSpeed).toFixed(1) + 'x';
-  const comboStr = state.combo >= 5 ? ` x${state.multiplier.toFixed(1)}` : '';
   const powerStr = (state.magnet ? ' [MAGNET]' : '') + (state.shield ? ' [SHIELD]' : '');
-  document.getElementById('speed').textContent = speedStr + comboStr + powerStr;
+  document.getElementById('speed').textContent = speedStr + powerStr;
+
+  const comboEl = document.getElementById('combo');
+  const comboText = state.combo >= 5 ? state.combo + ' (x' + state.multiplier.toFixed(1) + ')' : state.combo;
+  if (comboEl.textContent !== String(state.combo)) {
+    comboEl.classList.remove('combo-pulse');
+    void comboEl.offsetWidth;
+    comboEl.classList.add('combo-pulse');
+  }
+  comboEl.textContent = comboText;
 }
 
 function onResize() {
