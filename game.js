@@ -137,11 +137,11 @@ let flashTimeout = null;
 
 // shared geometry
 const OBSTACLE_GEOMETRIES = [
-  new THREE.BoxGeometry(1.2, 1.2, 1.2, 2, 2, 2),
-  new THREE.ConeGeometry(0.7, 1.4, 16),
-  new THREE.BoxGeometry(2.0, 0.8, 0.8, 3, 2, 2)
+  new THREE.BoxGeometry(1.2, 1.2, 1.2, 3, 3, 3),
+  new THREE.ConeGeometry(0.7, 1.4, 24),
+  new THREE.BoxGeometry(2.0, 0.8, 0.8, 4, 2, 2)
 ];
-const COIN_GEOMETRY = new THREE.TorusGeometry(0.45, 0.16, 16, 32);
+const COIN_GEOMETRY = new THREE.TorusGeometry(0.45, 0.16, 20, 40);
 
 // materials (assigned in init)
 let obstacleMat, coinMat, playerMat;
@@ -360,10 +360,10 @@ function buildGround() {
 
 function getCharacterGeometry(shape) {
   switch (shape) {
-    case 'octa': return new THREE.OctahedronGeometry(0.6, 2);
-    case 'dodeca': return new THREE.DodecahedronGeometry(0.6, 1);
-    case 'torus': return new THREE.TorusGeometry(0.5, 0.2, 24, 48);
-    default: return new THREE.IcosahedronGeometry(0.6, 2);
+    case 'octa': return new THREE.OctahedronGeometry(0.6, 3);
+    case 'dodeca': return new THREE.DodecahedronGeometry(0.6, 2);
+    case 'torus': return new THREE.TorusGeometry(0.5, 0.2, 32, 64);
+    default: return new THREE.IcosahedronGeometry(0.6, 3);
   }
 }
 
@@ -402,16 +402,16 @@ function buildStars() {
 }
 
 function spawnParticleBurst(x, y, z, color) {
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 5; i++) {
     if (particles.length >= MAX_PARTICLES) break;
-    const geo = new THREE.SphereGeometry(0.08, 4, 4);
-    const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 1 });
+    const geo = new THREE.SphereGeometry(0.05, 4, 4);
+    const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.8 });
     const p = new THREE.Mesh(geo, mat);
     p.position.set(x, y, z);
-    p.userData.vx = (Math.random() - 0.5) * 8;
-    p.userData.vy = Math.random() * 6 + 2;
-    p.userData.vz = (Math.random() - 0.5) * 4;
-    p.userData.life = 0.6;
+    p.userData.vx = (Math.random() - 0.5) * 5;
+    p.userData.vy = Math.random() * 4 + 1;
+    p.userData.vz = (Math.random() - 0.5) * 3;
+    p.userData.life = 0.3;
     scene.add(p);
     particles.push(p);
   }
@@ -1238,7 +1238,7 @@ function showShareButton() {
   const btn = document.createElement('button');
   btn.textContent = '📸 SAVE SCREENSHOT';
   btn.className = 'btn small';
-  btn.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:101;';
+  btn.style.cssText = 'position:fixed;top:50%;right:16px;transform:translateY(-50%);z-index:101;font-size:11px;padding:8px 12px;';
   btn.addEventListener('click', () => {
     captureScreenshot();
     btn.remove();
