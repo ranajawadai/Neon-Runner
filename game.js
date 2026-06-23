@@ -72,6 +72,7 @@ const TRAIL_LENGTH = 8;
 // camera shake
 let shakeIntensity = 0;
 let shakeDuration = 0;
+let gameTime = 0;
 
 // audio
 let audioCtx = null;
@@ -166,6 +167,8 @@ const DESPAWN_Z = 8;
 init();
 
 function init() {
+  console.log('THREE loaded:', typeof THREE !== 'undefined');
+  
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0a0a1a);
   scene.fog = new THREE.Fog(0x0a0a1a, 30, 200);
@@ -454,6 +457,18 @@ function spawnPowerup() {
 function animate() {
   requestAnimationFrame(animate);
   const dt = Math.min(clock.getDelta(), 0.05);
+
+  if (state.running && !state.gameOver && !state.isPaused) {
+    if (gameTime === undefined) { gameTime = 0; }
+    gameTime++;
+    if (gameTime === 3) {
+      console.log('scene.children:', scene.children.length);
+      console.log('renderer.info:', JSON.stringify(renderer.info.render));
+      console.log('camera pos:', camera.position.x, camera.position.y, camera.position.z);
+      console.log('player pos:', player.position.x, player.position.y, player.position.z);
+      console.log('player visible:', player.visible);
+      console.log('fog:', scene.fog ? scene.fog.near + '-' + scene.fog.far : 'none');
+    }
 
   if (state.running && !state.gameOver && !state.isPaused) {
     state.speed = Math.min(state.maxSpeed, state.speed + 0.25 * dt);
