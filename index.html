@@ -55,7 +55,27 @@
     <div id="start-screen" class="overlay hidden">
       <h1 class="title">NEON<span>RUNNER</span></h1>
       <p class="subtitle">Dodge obstacles. Collect coins. Survive.</p>
+
+      <div class="selector-row">
+        <div class="selector-group">
+          <label class="selector-label">CHARACTER</label>
+          <div id="char-selector" class="selector-btns"></div>
+        </div>
+        <div class="selector-group">
+          <label class="selector-label">THEME</label>
+          <div id="theme-selector" class="selector-btns"></div>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <span id="menu-best" class="stat-chip">🏆 Best: 0</span>
+        <span id="menu-daily" class="stat-chip">📅 Daily: 0</span>
+        <span id="menu-games" class="stat-chip">🎮 Games: 0</span>
+      </div>
+
       <button id="start-btn" class="btn">START</button>
+      <button id="achievements-btn" class="btn secondary small">ACHIEVEMENTS</button>
+
       <div class="controls-hint">
         <p><strong>CONTROLS</strong></p>
         <p>← → / A D : Switch lanes</p>
@@ -103,8 +123,16 @@
         <div class="stat-row"><span>Score</span><span id="final-score">0</span></div>
         <div class="stat-row"><span>Coins</span><span id="final-coins">0</span></div>
         <div class="stat-row"><span>Best</span><span id="best-score">0</span></div>
+        <div class="stat-row"><span>Daily Best</span><span id="final-daily">0</span></div>
       </div>
       <button id="restart-btn" class="btn">PLAY AGAIN</button>
+    </div>
+
+    <!-- Achievements Screen -->
+    <div id="achievements-screen" class="overlay hidden">
+      <h1 class="title small">ACHIEVEMENTS</h1>
+      <div id="achievements-list" class="achievements-grid"></div>
+      <button id="ach-back-btn" class="btn">BACK</button>
     </div>
   </div>
 

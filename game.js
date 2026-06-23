@@ -18,6 +18,31 @@ const POWERUP_TYPES = [
   { type: 'multi', color: 0xffdd00, label: 'x2' }
 ];
 
+const THEMES = {
+  neon: { name: 'Neon', unlock: 0, bg: 0x0a0a1a, gridA: 0x00ffff, gridB: 0xff00d6, ground: 0x06061a, fog: 0x0a0a1a, obstacle: 0xff1463, coin: 0xffe14d, player: 0x00ffff },
+  retro: { name: 'Retro', unlock: 2000, bg: 0x001a00, gridA: 0x00ff00, gridB: 0x88ff00, ground: 0x001200, fog: 0x001a00, obstacle: 0xff3300, coin: 0xffff00, player: 0x00ff00 },
+  space: { name: 'Space', unlock: 5000, bg: 0x000022, gridA: 0x4444ff, gridB: 0x8800ff, ground: 0x000033, fog: 0x000022, obstacle: 0xff0066, coin: 0xffffff, player: 0x6666ff },
+  underwater: { name: 'Aqua', unlock: 10000, bg: 0x001122, gridA: 0x00cccc, gridB: 0x0066ff, ground: 0x001a33, fog: 0x001122, obstacle: 0xff6600, coin: 0x00ffcc, player: 0x00ddff }
+};
+
+const CHARACTERS = [
+  { name: 'Runner', shape: 'icosa', color: 0x00ffff, unlock: 0 },
+  { name: 'Ghost', shape: 'octa', color: 0xcc66ff, unlock: 1000 },
+  { name: 'Star', shape: 'dodeca', color: 0xffdd00, unlock: 3000 },
+  { name: 'Blaze', shape: 'torus', color: 0xff4400, unlock: 7000 }
+];
+
+const ACHIEVEMENTS = [
+  { id: 'score1k', name: 'Getting Started', desc: 'Score 1,000', icon: '⭐', check: s => s.best >= 1000 },
+  { id: 'score5k', name: 'Speed Demon', desc: 'Score 5,000', icon: '🔥', check: s => s.best >= 5000 },
+  { id: 'score10k', name: 'Neon Legend', desc: 'Score 10,000', icon: '💎', check: s => s.best >= 10000 },
+  { id: 'score25k', name: 'Cyber God', desc: 'Score 25,000', icon: '👑', check: s => s.best >= 25000 },
+  { id: 'coins100', name: 'Coin Collector', desc: 'Collect 100 coins in one run', icon: '💰', check: s => s.coins >= 100 },
+  { id: 'combo10', name: 'Combo Master', desc: 'Reach 10x combo', icon: '⚡', check: s => s.combo >= 10 },
+  { id: 'speed3x', name: 'Need for Speed', desc: 'Reach 3x speed', icon: '🚀', check: s => (s.speed / s.baseSpeed) >= 3 },
+  { id: 'games10', name: 'Dedicated', desc: 'Play 10 games', icon: '🎮', check: s => s.gamesPlayed >= 10 }
+];
+
 const state = {
   running: false,
   gameOver: false,
@@ -34,6 +59,11 @@ const state = {
   magnet: false,
   magnetTimer: 0,
   shieldTimer: 0,
+  theme: localStorage.getItem('neonRunnerTheme') || 'neon',
+  character: Number(localStorage.getItem('neonRunnerChar') || '0'),
+  gamesPlayed: Number(localStorage.getItem('neonRunnerGames') || '0'),
+  unlockedAchievements: JSON.parse(localStorage.getItem('neonRunnerAchievements') || '[]'),
+  dailyBest: Number(localStorage.getItem('neonRunnerDaily_' + new Date().toDateString()) || '0')
 };
 
 // jump physics
@@ -282,18 +312,31 @@ function buildGround() {
   scene.add(grid);
 }
 
+function getCharacterGeometry(shape) {
+  switch (shape) {
+    case 'octa': return new THREE.OctahedronGeometry(0.6, 0);
+    case 'dodeca': return new THREE.DodecahedronGeometry(0.6, 0);
+    case 'torus': return new THREE.TorusGeometry(0.5, 0.2, 12, 24);
+    default: return new THREE.IcosahedronGeometry(0.6, 1);
+  }
+}
+
 function buildPlayer() {
-  const geo = new THREE.IcosahedronGeometry(0.6, 1);
-  player = new THREE.Mesh(geo, playerMat);
+  const char = CHARACTERS[state.character];
+  const geo = getCharacterGeometry(char.shape);
+  const mat = new THREE.MeshStandardMaterial({ color: char.color, emissive: char.color, emissiveIntensity: 0.8, metalness: 0.5, roughness: 0.25 });
+  playerMat = mat;
+  player = new THREE.Mesh(geo, mat);
   player.position.set(0, GROUND_Y, 0);
   scene.add(player);
 
-  const glowGeo = new THREE.IcosahedronGeometry(0.85, 1);
-  const glowMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.15 });
+  const glowGeo = getCharacterGeometry(char.shape);
+  glowGeo.scale(1.4, 1.4, 1.4);
+  const glowMat = new THREE.MeshBasicMaterial({ color: char.color, transparent: true, opacity: 0.15 });
   const glow = new THREE.Mesh(glowGeo, glowMat);
   player.add(glow);
 
-  const pl = new THREE.PointLight(0x00ffff, 1.2, 8);
+  const pl = new THREE.PointLight(char.color, 1.2, 8);
   player.add(pl);
 }
 
@@ -490,6 +533,72 @@ function showMilestone(distance) {
     el.style.transform = 'translate(-50%,-50%) scale(1.5)';
   });
   setTimeout(() => el.remove(), 900);
+}
+
+function applyTheme(themeId) {
+  const t = THEMES[themeId];
+  if (!t) return;
+  scene.background = new THREE.Color(t.bg);
+  scene.fog = new THREE.Fog(t.fog, 30, 200);
+  grid.material.color.set(t.gridA);
+  grid.material.opacity = 0.35;
+  obstacleMat.color.set(t.obstacle);
+  obstacleMat.emissive.set(t.obstacle);
+  coinMat.color.set(t.coin);
+  coinMat.emissive.set(t.coin);
+  bgLayers.forEach((layer, i) => {
+    if (layer.userData.isBuilding) {
+      layer.material.color.set(t.bg);
+    }
+  });
+}
+
+function checkAchievements() {
+  ACHIEVEMENTS.forEach(a => {
+    if (!state.unlockedAchievements.includes(a.id) && a.check(state)) {
+      state.unlockedAchievements.push(a.id);
+      localStorage.setItem('neonRunnerAchievements', JSON.stringify(state.unlockedAchievements));
+      showAchievementPopup(a);
+    }
+  });
+}
+
+function showAchievementPopup(achievement) {
+  const el = document.createElement('div');
+  el.innerHTML = '<div style="font-size:24px">' + achievement.icon + '</div><div style="font-size:16px;font-weight:bold;color:#ffdd00">' + achievement.name + '</div><div style="font-size:12px;color:#aaa">' + achievement.desc + '</div>';
+  el.style.cssText = 'position:fixed;bottom:20px;right:20px;background:rgba(10,10,26,0.95);border:2px solid #ffdd00;border-radius:12px;padding:16px 20px;text-align:center;z-index:100;transition:all 0.5s ease-out;opacity:0;transform:translateX(100px);box-shadow:0 0 20px rgba(255,221,0,0.3);';
+  document.body.appendChild(el);
+  requestAnimationFrame(() => {
+    el.style.opacity = '1';
+    el.style.transform = 'translateX(0)';
+  });
+  playTone(523, 0.1, 'sine', 0.3);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(100px)';
+    setTimeout(() => el.remove(), 500);
+  }, 3000);
+}
+
+function seededRandom(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+function getDailySeed() {
+  const d = new Date();
+  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+}
+
+function updateMusicIntensity() {
+  if (!bgmOsc) return;
+  const speedRatio = state.speed / state.baseSpeed;
+  const baseFreq = 110;
+  const maxFreq = 220;
+  bgmOsc.frequency.value = baseFreq + (maxFreq - baseFreq) * Math.min(1, (speedRatio - 1) / 2);
 }
 
 function shuffle(arr) {
@@ -713,6 +822,7 @@ function animate() {
     updateTrail();
     updateSpeedLines(dt);
     updateParallax(dt);
+    updateMusicIntensity();
 
     // Distance milestone check
     const distance = Math.floor(state.score / 10);
@@ -765,6 +875,11 @@ function endGame() {
     state.best = Math.floor(state.score);
     localStorage.setItem('neonRunnerBest', state.best);
   }
+  if (state.score > state.dailyBest) {
+    state.dailyBest = Math.floor(state.score);
+    localStorage.setItem('neonRunnerDaily_' + new Date().toDateString(), state.dailyBest);
+  }
+  checkAchievements();
   document.getElementById('final-score').textContent = Math.floor(state.score);
   document.getElementById('final-coins').textContent = state.coins;
   document.getElementById('best-score').textContent = state.best;
@@ -837,6 +952,57 @@ function setupUI() {
     else showScreen('start-screen');
   });
 
+  // Character selector
+  const charSel = document.getElementById('char-selector');
+  CHARACTERS.forEach((char, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'selector-btn' + (i === state.character ? ' active' : '') + (state.best < char.unlock ? ' locked' : '');
+    btn.style.background = '#' + char.color.toString(16).padStart(6, '0');
+    btn.textContent = char.name.charAt(0);
+    btn.title = char.name + (state.best < char.unlock ? ' (Unlock at ' + char.unlock + ')' : '');
+    btn.addEventListener('click', () => {
+      if (state.best < char.unlock) return;
+      state.character = i;
+      localStorage.setItem('neonRunnerChar', i);
+      charSel.querySelectorAll('.selector-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      rebuildPlayer();
+    });
+    charSel.appendChild(btn);
+  });
+
+  // Theme selector
+  const themeSel = document.getElementById('theme-selector');
+  Object.keys(THEMES).forEach(key => {
+    const t = THEMES[key];
+    const btn = document.createElement('div');
+    btn.className = 'selector-btn' + (key === state.theme ? ' active' : '') + (state.best < t.unlock ? ' locked' : '');
+    btn.style.background = '#' + t.gridA.toString(16).padStart(6, '0');
+    btn.textContent = t.name.charAt(0);
+    btn.title = t.name + (state.best < t.unlock ? ' (Unlock at ' + t.unlock + ')' : '');
+    btn.addEventListener('click', () => {
+      if (state.best < t.unlock) return;
+      state.theme = key;
+      localStorage.setItem('neonRunnerTheme', key);
+      themeSel.querySelectorAll('.selector-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyTheme(key);
+    });
+    themeSel.appendChild(btn);
+  });
+
+  // Stats
+  document.getElementById('menu-best').textContent = '🏆 Best: ' + state.best;
+  document.getElementById('menu-daily').textContent = '📅 Daily: ' + state.dailyBest;
+  document.getElementById('menu-games').textContent = '🎮 Games: ' + state.gamesPlayed;
+
+  // Achievements button
+  document.getElementById('achievements-btn').addEventListener('click', () => {
+    renderAchievements();
+    showScreen('achievements-screen');
+  });
+  document.getElementById('ach-back-btn').addEventListener('click', () => showScreen('start-screen'));
+
   const musicVol = document.getElementById('music-volume');
   const sfxVol = document.getElementById('sfx-volume');
   const sens = document.getElementById('sensitivity');
@@ -850,6 +1016,39 @@ function setupUI() {
   });
   sens.addEventListener('input', () => {
     document.getElementById('sensitivity-val').textContent = sens.value;
+  });
+}
+
+function rebuildPlayer() {
+  const char = CHARACTERS[state.character];
+  const geo = getCharacterGeometry(char.shape);
+  const mat = new THREE.MeshStandardMaterial({ color: char.color, emissive: char.color, emissiveIntensity: 0.8, metalness: 0.5, roughness: 0.25 });
+  playerMat = mat;
+  player.geometry.dispose();
+  player.geometry = geo;
+  player.material = mat;
+  player.children.forEach(c => {
+    if (c.geometry) c.geometry.dispose();
+    if (c.material) c.material.dispose();
+    player.remove(c);
+  });
+  const glowGeo = getCharacterGeometry(char.shape);
+  glowGeo.scale(1.4, 1.4, 1.4);
+  const glowMat = new THREE.MeshBasicMaterial({ color: char.color, transparent: true, opacity: 0.15 });
+  player.add(new THREE.Mesh(glowGeo, glowMat));
+  const pl = new THREE.PointLight(char.color, 1.2, 8);
+  player.add(pl);
+}
+
+function renderAchievements() {
+  const list = document.getElementById('achievements-list');
+  list.innerHTML = '';
+  ACHIEVEMENTS.forEach(a => {
+    const unlocked = state.unlockedAchievements.includes(a.id);
+    const card = document.createElement('div');
+    card.className = 'ach-card' + (unlocked ? ' unlocked' : '');
+    card.innerHTML = '<div class="ach-icon">' + a.icon + '</div><div class="ach-name">' + a.name + '</div><div class="ach-desc">' + a.desc + '</div>';
+    list.appendChild(card);
   });
 }
 
@@ -906,12 +1105,17 @@ function startGame() {
   state.speed = state.baseSpeed;
   state.score = 0;
   state.coins = 0;
+  state.gamesPlayed++;
+  localStorage.setItem('neonRunnerGames', state.gamesPlayed);
+  lastMilestone = 0;
   currentLane = 1;
   velocityY = 0;
   isJumping = false;
   player.position.set(0, GROUND_Y, 0);
   player.visible = true;
   spawnTimer = 0.5;
+
+  applyTheme(state.theme);
 
   obstacles.forEach(o => { scene.remove(o); o.geometry.dispose(); });
   obstacles = [];
