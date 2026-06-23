@@ -47,8 +47,8 @@ const state = {
   running: false,
   gameOver: false,
   isPaused: false,
-  speed: 14,
-  baseSpeed: 14,
+  speed: 20,
+  baseSpeed: 20,
   maxSpeed: 42,
   score: 0,
   coins: 0,
@@ -471,19 +471,7 @@ function buildTrail() {
 }
 
 function buildSpeedLines() {
-  const geo = new THREE.PlaneGeometry(0.02, 2.5);
-  const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, side: THREE.DoubleSide });
-  for (let i = 0; i < 24; i++) {
-    const line = new THREE.Mesh(geo, mat.clone());
-    line.position.set(
-      (Math.random() - 0.5) * 8,
-      Math.random() * 3 + 0.5,
-      -Math.random() * 60 - 10
-    );
-    line.visible = false;
-    scene.add(line);
-    speedLines.push(line);
-  }
+  // Speed lines disabled — visual clutter
 }
 
 function updateSpeedLines(dt) {
