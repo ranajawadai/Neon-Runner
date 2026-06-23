@@ -200,6 +200,21 @@ function sfxCoin() {
   playTone(1320, 0.08, 'sine', 0.2);
 }
 
+function sfxNearMiss() {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.08);
+  g.gain.setValueAtTime(0.15, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+  osc.connect(g);
+  g.connect(sfxGain);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.1);
+}
+
 function sfxJump() {
   if (!audioCtx) return;
   const osc = audioCtx.createOscillator();
@@ -912,12 +927,17 @@ function animate() {
       playTone(880, 0.15, 'sine', 0.2);
     }
 
-    // Near-miss detection (no flash)
+    // Near-miss detection
     obstacles.forEach(o => {
       const dx = Math.abs(o.position.x - px);
       const dz2 = Math.abs(o.position.z - pz);
-      if (dx < 1.2 && dz2 < 1.5 && dx > 0.7) {
+      if (dx < 1.2 && dz2 < 1.5 && dx > 0.7 && !o.userData.nearMissed) {
         o.userData.nearMissed = true;
+        sfxNearMiss();
+        const overlay = document.getElementById('near-miss-overlay');
+        overlay.classList.add('active');
+        setTimeout(() => overlay.classList.remove('active'), 100);
+        state.score += 50;
       }
     });
   } else {
