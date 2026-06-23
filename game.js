@@ -251,26 +251,61 @@ function sfxPowerup() {
 
 function startBGM() {
   if (!audioCtx || bgmOsc) return;
+
+  // Bass oscillator
   bgmOsc = audioCtx.createOscillator();
-  bgmOsc.type = 'triangle';
-  bgmOsc.frequency.value = 110;
+  bgmOsc.type = 'sawtooth';
+  bgmOsc.frequency.value = 55;
+  const bassGain = audioCtx.createGain();
+  bassGain.gain.value = 0.15;
+  bgmOsc.connect(bassGain);
+  bassGain.connect(bgmGain);
+  bgmOsc.start();
+
+  // Sub bass
+  const subOsc = audioCtx.createOscillator();
+  subOsc.type = 'sine';
+  subOsc.frequency.value = 55;
+  const subGain = audioCtx.createGain();
+  subGain.gain.value = 0.2;
+  subOsc.connect(subGain);
+  subGain.connect(bgmGain);
+  subOsc.start();
+
+  // Arpeggio oscillator
+  const arpOsc = audioCtx.createOscillator();
+  arpOsc.type = 'square';
+  arpOsc.frequency.value = 220;
+  const arpGain = audioCtx.createGain();
+  arpGain.gain.value = 0.08;
+  arpOsc.connect(arpGain);
+  arpGain.connect(bgmGain);
+  arpOsc.start();
+
+  // LFO for bass wobble
   const lfo = audioCtx.createOscillator();
   lfo.type = 'sine';
-  lfo.frequency.value = 0.25;
+  lfo.frequency.value = 0.5;
   const lfoGain = audioCtx.createGain();
-  lfoGain.gain.value = 15;
+  lfoGain.gain.value = 10;
   lfo.connect(lfoGain);
   lfoGain.connect(bgmOsc.frequency);
   lfo.start();
-  bgmOsc.connect(bgmGain);
-  bgmOsc.start();
+
+  // Store references for stop/update
   bgmOsc._lfo = lfo;
+  bgmOsc._sub = subOsc;
+  bgmOsc._arp = arpOsc;
+  bgmOsc._bassGain = bassGain;
+  bgmOsc._arpGain = arpGain;
 }
 
 function stopBGM() {
   if (bgmOsc) {
-    bgmOsc.stop();
     bgmOsc._lfo.stop();
+    bgmOsc._sub.stop();
+    bgmOsc._arp.stop();
+    bgmOsc.stop();
     bgmOsc = null;
   }
 }
@@ -701,9 +736,17 @@ function getDailySeed() {
 function updateMusicIntensity() {
   if (!bgmOsc) return;
   const speedRatio = state.speed / state.baseSpeed;
-  const baseFreq = 110;
-  const maxFreq = 220;
-  bgmOsc.frequency.value = baseFreq + (maxFreq - baseFreq) * Math.min(1, (speedRatio - 1) / 2);
+  const intensity = Math.min(1, (speedRatio - 1) / 2);
+
+  // Increase bass frequency with speed
+  bgmOsc.frequency.value = 55 + intensity * 30;
+
+  // Increase arpeggio rate and pitch
+  bgmOsc._arp.frequency.value = 220 + intensity * 220;
+  bgmOsc._arpGain.gain.value = 0.08 + intensity * 0.06;
+
+  // Increase LFO speed
+  bgmOsc._lfo.frequency.value = 0.5 + intensity * 1.5;
 }
 
 function shuffle(arr) {
