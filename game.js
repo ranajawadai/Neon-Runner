@@ -72,7 +72,6 @@ const TRAIL_LENGTH = 8;
 // camera shake
 let shakeIntensity = 0;
 let shakeDuration = 0;
-let gameTime = 0;
 
 // audio
 let audioCtx = null;
@@ -167,9 +166,6 @@ const DESPAWN_Z = 8;
 init();
 
 function init() {
-  console.log('=== DEBUG: init() started ===');
-  console.log('THREE loaded:', typeof THREE !== 'undefined');
-  
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0a0a1a);
   scene.fog = new THREE.Fog(0x0a0a1a, 30, 200);
@@ -178,9 +174,6 @@ function init() {
   camera.position.set(0, 3.4, 7);
   camera.lookAt(0, 1, -8);
 
-  const container = document.getElementById('game-container');
-  console.log('container:', container ? 'found' : 'NULL');
-  
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -189,12 +182,7 @@ function init() {
   renderer.domElement.style.top = '0';
   renderer.domElement.style.left = '0';
   renderer.domElement.style.zIndex = '0';
-  container.prepend(renderer.domElement);
-  
-  console.log('canvas:', renderer.domElement);
-  console.log('canvas parent:', renderer.domElement.parentElement);
-  const cs = getComputedStyle(renderer.domElement);
-  console.log('canvas CSS: w=' + cs.width + ' h=' + cs.height + ' display=' + cs.display + ' position=' + cs.position + ' zIndex=' + cs.zIndex);
+  document.getElementById('game-container').prepend(renderer.domElement);
 
   clock = new THREE.Clock();
 
@@ -473,12 +461,6 @@ function spawnPowerup() {
 function animate() {
   requestAnimationFrame(animate);
   const dt = Math.min(clock.getDelta(), 0.05);
-
-  // Frame-by-frame debug (first 10 frames only)
-  if (gameTime < 10) {
-    gameTime++;
-    console.log('frame ' + gameTime + ': running=' + state.running + ' children=' + scene.children.length + ' drawCalls=' + renderer.info.render.calls);
-  }
 
   if (state.running && !state.gameOver && !state.isPaused) {
 
