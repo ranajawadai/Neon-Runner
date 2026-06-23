@@ -87,6 +87,8 @@ const obstaclePool = [];
 const coinPool = [];
 const OBSTACLE_POOL_SIZE = 30;
 const COIN_POOL_SIZE = 40;
+const powerupPool = [];
+const POWERUP_POOL_SIZE = 10;
 
 function getFromPool(pool, createFn) {
   for (let i = 0; i < pool.length; i++) {
@@ -749,13 +751,19 @@ function spawnCoinLine(x) {
 function spawnPowerup() {
   if (Math.random() > 0.08) return;
   const t = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)];
-  const geo = new THREE.OctahedronGeometry(0.35, 2);
-  const mat = new THREE.MeshStandardMaterial({ color: t.color, emissive: t.color, emissiveIntensity: 0.9, metalness: 0.6, roughness: 0.3 });
-  const m = new THREE.Mesh(geo, mat);
+  const m = getFromPool(powerupPool, () => {
+    const geo = new THREE.OctahedronGeometry(0.35, 2);
+    const mat = new THREE.MeshStandardMaterial({ color: t.color, emissive: t.color, emissiveIntensity: 0.9, metalness: 0.6, roughness: 0.3 });
+    const mesh = new THREE.Mesh(geo, mat);
+    scene.add(mesh);
+    return mesh;
+  });
   const lane = LANES[Math.floor(Math.random() * 3)];
   m.position.set(lane, 1.0, -80);
   m.userData.type = t.type;
-  scene.add(m);
+  m.visible = true;
+  m.material.color.set(t.color);
+  m.material.emissive.set(t.color);
   powerups.push(m);
 }
 
@@ -896,16 +904,12 @@ function animate() {
         if (p.userData.type === 'magnet') { state.magnet = true; state.magnetTimer = 8; }
         if (p.userData.type === 'shield') { state.shield = true; state.shieldTimer = 10; }
         if (p.userData.type === 'multi') { state.multiplier = 3; }
-        scene.remove(p);
-        p.geometry.dispose();
-        p.material.dispose();
+        p.visible = false;
         powerups.splice(i, 1);
         continue;
       }
       if (p.position.z > DESPAWN_Z) {
-        scene.remove(p);
-        p.geometry.dispose();
-        p.material.dispose();
+        p.visible = false;
         powerups.splice(i, 1);
       }
     }
@@ -1222,8 +1226,8 @@ function quitToMenu() {
   coins = [];
   particles.forEach(p => { scene.remove(p); p.geometry.dispose(); p.material.dispose(); });
   particles.length = 0;
-  powerups.forEach(p => { scene.remove(p); p.geometry.dispose(); p.material.dispose(); });
-  powerups.length = 0;
+  powerups.forEach(p => { p.visible = false; });
+  powerups = [];
   trailPositions.length = 0;
   shakeDuration = 0;
   speedLines.forEach(l => { l.visible = false; l.material.opacity = 0; });
@@ -1261,8 +1265,8 @@ function startGame() {
   trailPositions.length = 0;
   shakeDuration = 0;
   speedLines.forEach(l => { l.visible = false; l.material.opacity = 0; });
-  powerups.forEach(p => { scene.remove(p); p.geometry.dispose(); p.material.dispose(); });
-  powerups.length = 0;
+  powerups.forEach(p => { p.visible = false; });
+  powerups = [];
   state.combo = 0;
   state.multiplier = 1;
   state.shield = false;
