@@ -137,11 +137,11 @@ let flashTimeout = null;
 
 // shared geometry
 const OBSTACLE_GEOMETRIES = [
-  new THREE.BoxGeometry(1.2, 1.2, 1.2),
-  new THREE.ConeGeometry(0.7, 1.4, 4),
-  new THREE.BoxGeometry(2.0, 0.8, 0.8)
+  new THREE.BoxGeometry(1.2, 1.2, 1.2, 2, 2, 2),
+  new THREE.ConeGeometry(0.7, 1.4, 16),
+  new THREE.BoxGeometry(2.0, 0.8, 0.8, 3, 2, 2)
 ];
-const COIN_GEOMETRY = new THREE.TorusGeometry(0.45, 0.16, 12, 24);
+const COIN_GEOMETRY = new THREE.TorusGeometry(0.45, 0.16, 16, 32);
 
 // materials (assigned in init)
 let obstacleMat, coinMat, playerMat;
@@ -157,6 +157,11 @@ const TRAIL_LENGTH = 8;
 // camera shake
 let shakeIntensity = 0;
 let shakeDuration = 0;
+
+// FPS tracking
+let fpsFrames = 0;
+let fpsTime = 0;
+let fpsDisplay = 60;
 
 // audio
 let audioCtx = null;
@@ -355,10 +360,10 @@ function buildGround() {
 
 function getCharacterGeometry(shape) {
   switch (shape) {
-    case 'octa': return new THREE.OctahedronGeometry(0.6, 0);
-    case 'dodeca': return new THREE.DodecahedronGeometry(0.6, 0);
-    case 'torus': return new THREE.TorusGeometry(0.5, 0.2, 12, 24);
-    default: return new THREE.IcosahedronGeometry(0.6, 1);
+    case 'octa': return new THREE.OctahedronGeometry(0.6, 2);
+    case 'dodeca': return new THREE.DodecahedronGeometry(0.6, 1);
+    case 'torus': return new THREE.TorusGeometry(0.5, 0.2, 24, 48);
+    default: return new THREE.IcosahedronGeometry(0.6, 2);
   }
 }
 
@@ -680,7 +685,7 @@ function spawnCoinLine(x) {
 function spawnPowerup() {
   if (Math.random() > 0.08) return;
   const t = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)];
-  const geo = new THREE.OctahedronGeometry(0.35, 0);
+  const geo = new THREE.OctahedronGeometry(0.35, 2);
   const mat = new THREE.MeshStandardMaterial({ color: t.color, emissive: t.color, emissiveIntensity: 0.9, metalness: 0.6, roughness: 0.3 });
   const m = new THREE.Mesh(geo, mat);
   const lane = LANES[Math.floor(Math.random() * 3)];
@@ -873,6 +878,17 @@ function animate() {
 
   updateParticles(dt);
   updateShake(dt);
+
+  // FPS counter
+  fpsFrames++;
+  fpsTime += dt;
+  if (fpsTime >= 0.5) {
+    fpsDisplay = Math.round(fpsFrames / fpsTime);
+    const fpsEl = document.getElementById('fps-counter');
+    if (fpsEl) fpsEl.textContent = fpsDisplay + ' FPS';
+    fpsFrames = 0;
+    fpsTime = 0;
+  }
 
   renderer.render(scene, camera);
 }

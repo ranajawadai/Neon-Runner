@@ -175,17 +175,55 @@ body {
 
 /* Controls hint */
 .controls-hint {
-  margin-top: 24px;
+  margin-top: 20px;
   text-align: center;
-  color: rgba(255,255,255,0.25);
-  font-size: 12px;
-  line-height: 2;
+  color: rgba(255,255,255,0.2);
+  font-size: 11px;
+  letter-spacing: 1px;
 }
 
-.controls-hint strong {
+/* FPS badge on start screen */
+.fps-info {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 16px 0 4px;
+}
+
+.fps-big {
+  font-size: 36px;
+  font-weight: 900;
+  color: #00ff88;
+  text-shadow: 0 0 15px rgba(0,255,136,0.4);
+  line-height: 1;
+}
+
+.fps-label {
+  font-size: 14px;
+  font-weight: 700;
   color: rgba(0,255,136,0.6);
+  letter-spacing: 2px;
+}
+
+.fps-sub {
+  font-size: 9px;
   letter-spacing: 3px;
-  font-size: 11px;
+  color: rgba(255,255,255,0.2);
+  margin-left: 8px;
+}
+
+/* FPS counter in HUD */
+.fps-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #00ff88;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(0,255,136,0.2);
+  pointer-events: none;
 }
 
 /* Game over stats */
