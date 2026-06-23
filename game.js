@@ -66,6 +66,7 @@ const state = {
   unlockedAchievements: JSON.parse(localStorage.getItem('neonRunnerAchievements') || '[]'),
   dailyBest: Number(localStorage.getItem('neonRunnerDaily_' + new Date().toDateString()) || '0')
 };
+let lastCombo = 0;
 
 // jump physics
 let velocityY = 0;
@@ -1284,7 +1285,8 @@ function updateHUD() {
 
   const comboEl = document.getElementById('combo');
   const comboText = state.combo >= 5 ? state.combo + ' (x' + state.multiplier.toFixed(1) + ')' : state.combo;
-  if (comboEl.textContent !== String(state.combo)) {
+  if (lastCombo !== state.combo) {
+    lastCombo = state.combo;
     comboEl.classList.remove('combo-pulse');
     void comboEl.offsetWidth;
     comboEl.classList.add('combo-pulse');
