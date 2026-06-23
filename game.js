@@ -50,6 +50,21 @@ let spawnTimer = 0;
 const gridStartZ = -150;
 const cellSize = 4;
 
+// moving obstacles
+let moveObstacleTimer = 0;
+const MOVE_OBSTACLE_INTERVAL = 2;
+
+// distance milestones
+let lastMilestone = 0;
+const MILESTONE_INTERVAL = 500;
+
+// parallax layers
+let bgLayers = [];
+
+// screen flash
+let flashOverlay = null;
+let flashTimeout = null;
+
 // shared geometry
 const OBSTACLE_GEOMETRIES = [
   new THREE.BoxGeometry(1.2, 1.2, 1.2),
@@ -196,6 +211,8 @@ function init() {
   buildStars();
   buildTrail();
   buildSpeedLines();
+  buildParallax();
+  buildFlashOverlay();
 
   window.addEventListener('resize', onResize);
   setupInput();
@@ -404,6 +421,77 @@ function updateSpeedLines(dt) {
   });
 }
 
+function buildParallax() {
+  const colors = [0x1a0033, 0x0d001a, 0x0a0014];
+  const speeds = [0.3, 0.6, 1.0];
+  const heights = [8, 5, 3];
+  const widths = [120, 80, 50];
+
+  for (let i = 0; i < 3; i++) {
+    const geo = new THREE.PlaneGeometry(widths[i], heights[i]);
+    const mat = new THREE.MeshBasicMaterial({ color: colors[i], transparent: true, opacity: 0.6 - i * 0.15, side: THREE.DoubleSide });
+    const layer = new THREE.Mesh(geo, mat);
+    layer.position.set(0, heights[i] / 2, -100 - i * 30);
+    layer.userData.speed = speeds[i];
+    layer.userData.baseZ = layer.position.z;
+    scene.add(layer);
+    bgLayers.push(layer);
+
+    for (let j = 0; j < 5; j++) {
+      const bGeo = new THREE.BoxGeometry(1.5 + Math.random() * 2, 2 + Math.random() * 4, 0.5);
+      const bMat = new THREE.MeshBasicMaterial({ color: colors[i], transparent: true, opacity: 0.4 });
+      const building = new THREE.Mesh(bGeo, bMat);
+      building.position.set((j - 2) * 15 + (Math.random() - 0.5) * 8, heights[i] / 2 - 1, -100 - i * 30);
+      building.userData.speed = speeds[i];
+      building.userData.baseZ = building.position.z;
+      scene.add(building);
+      bgLayers.push(building);
+    }
+  }
+}
+
+function updateParallax(dt) {
+  bgLayers.forEach(layer => {
+    layer.position.z += state.speed * dt * layer.userData.speed;
+    if (layer.position.z > 20) {
+      layer.position.z = layer.userData.baseZ - 60;
+    }
+  });
+}
+
+function buildFlashOverlay() {
+  const geo = new THREE.PlaneGeometry(20, 12);
+  const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, side: THREE.DoubleSide, depthTest: false });
+  flashOverlay = new THREE.Mesh(geo, mat);
+  flashOverlay.position.set(0, 3.4, 5);
+  flashOverlay.renderOrder = 999;
+  scene.add(flashOverlay);
+}
+
+function triggerFlash(color, intensity, duration) {
+  if (!flashOverlay) return;
+  flashOverlay.material.color.set(color);
+  flashOverlay.material.opacity = intensity;
+  if (flashTimeout) clearTimeout(flashTimeout);
+  flashTimeout = setTimeout(() => {
+    flashOverlay.material.opacity = 0;
+  }, duration);
+}
+
+function showMilestone(distance) {
+  const text = distance + 'm!';
+  const el = document.createElement('div');
+  el.textContent = text;
+  el.style.cssText = 'position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);font-size:48px;font-weight:900;color:#00ffff;text-shadow:0 0 20px #00ffff,0 0 40px #00ff88;pointer-events:none;z-index:100;transition:all 0.8s ease-out;opacity:1;';
+  document.body.appendChild(el);
+  requestAnimationFrame(() => {
+    el.style.top = '20%';
+    el.style.opacity = '0';
+    el.style.transform = 'translate(-50%,-50%) scale(1.5)';
+  });
+  setTimeout(() => el.remove(), 900);
+}
+
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -431,6 +519,13 @@ function spawnObstacle(x) {
   const geo = OBSTACLE_GEOMETRIES[Math.floor(Math.random() * OBSTACLE_GEOMETRIES.length)];
   const m = new THREE.Mesh(geo, obstacleMat);
   m.position.set(x, 0.6, -80);
+  m.userData.moving = Math.random() < 0.3;
+  m.userData.shifted = false;
+  m.userData.nearMissed = false;
+  if (m.userData.moving) {
+    m.material = obstacleMat.clone();
+    m.material.emissive.set(0xff6600);
+  }
   scene.add(m);
   obstacles.push(m);
 }
@@ -491,6 +586,21 @@ function animate() {
       const o = obstacles[i];
       o.position.z += dz;
       const oz = o.position.z;
+
+      // Moving obstacle: shift lanes when close to player
+      if (o.userData.moving && oz > -40 && oz < -10 && !o.userData.shifted) {
+        const currentLaneIdx = LANES.indexOf(o.position.x);
+        if (currentLaneIdx !== -1) {
+          const dir = Math.random() < 0.5 ? -1 : 1;
+          const newIdx = Math.max(0, Math.min(2, currentLaneIdx + dir));
+          if (newIdx !== currentLaneIdx) {
+            o.position.x = LANES[newIdx];
+            o.userData.shifted = true;
+            spawnParticleBurst(o.position.x, o.position.y, o.position.z, 0xff4400);
+          }
+        }
+      }
+
       if (Math.abs(o.position.x - px) < 0.85 && Math.abs(oz - pz) < 1.0 && Math.abs(o.position.y - py) < 0.95) {
         if (state.shield) {
           state.shield = false;
@@ -533,6 +643,7 @@ function animate() {
         if (Math.abs(c.position.x - px) < 0.8 && Math.abs(c.position.y - py) < 0.85) {
           spawnParticleBurst(c.position.x, c.position.y, c.position.z, 0xffe14d);
           sfxCoin();
+          triggerFlash(0xffffff, 0.15, 100);
           scene.remove(c);
           coins.splice(i, 1);
           state.coins++;
@@ -601,6 +712,28 @@ function animate() {
     
     updateTrail();
     updateSpeedLines(dt);
+    updateParallax(dt);
+
+    // Distance milestone check
+    const distance = Math.floor(state.score / 10);
+    if (distance >= lastMilestone + MILESTONE_INTERVAL) {
+      lastMilestone = distance - (distance % MILESTONE_INTERVAL);
+      showMilestone(lastMilestone);
+      playTone(660, 0.15, 'sine', 0.3);
+      playTone(880, 0.15, 'sine', 0.2);
+    }
+
+    // Near-miss flash (obstacle passes very close)
+    obstacles.forEach(o => {
+      const dx = Math.abs(o.position.x - px);
+      const dz2 = Math.abs(o.position.z - pz);
+      if (dx < 1.2 && dz2 < 1.5 && dx > 0.7) {
+        if (!o.userData.nearMissed) {
+          o.userData.nearMissed = true;
+          triggerFlash(0xff0000, 0.2, 150);
+        }
+      }
+    });
   } else {
     player.rotation.y += dt * 0.8;
   }
@@ -614,8 +747,18 @@ function animate() {
 function endGame() {
   state.gameOver = true;
   state.running = false;
-  triggerShake(0.5, 0.4);
+  triggerShake(0.8, 0.6);
+  triggerFlash(0xff0000, 0.5, 300);
+
+  // Enhanced death explosion — multiple bursts
   spawnParticleBurst(player.position.x, player.position.y, player.position.z, 0xff1463);
+  setTimeout(() => spawnParticleBurst(player.position.x + 0.5, player.position.y + 0.3, player.position.z, 0xff6600), 100);
+  setTimeout(() => spawnParticleBurst(player.position.x - 0.5, player.position.y, player.position.z + 0.5, 0xff00ff), 200);
+  setTimeout(() => spawnParticleBurst(player.position.x, player.position.y + 0.5, player.position.z - 0.3, 0x00ffff), 300);
+
+  // Hide player
+  player.visible = false;
+
   stopBGM();
   sfxDeath();
   if (state.score > state.best) {
@@ -767,6 +910,7 @@ function startGame() {
   velocityY = 0;
   isJumping = false;
   player.position.set(0, GROUND_Y, 0);
+  player.visible = true;
   spawnTimer = 0.5;
 
   obstacles.forEach(o => { scene.remove(o); o.geometry.dispose(); });
