@@ -94,6 +94,7 @@ const OBSTACLE_POOL_SIZE = 30;
 const COIN_POOL_SIZE = 40;
 const powerupPool = [];
 const POWERUP_POOL_SIZE = 10;
+const particlePool = [];
 
 function getFromPool(pool, createFn) {
   for (let i = 0; i < pool.length; i++) {
@@ -480,14 +481,20 @@ function spawnParticleBurst(x, y, z, color, count) {
   count = count || 8;
   for (let i = 0; i < count; i++) {
     if (particles.length >= MAX_PARTICLES) break;
-    const size = 0.08 + Math.random() * 0.12;
-    const geo = new THREE.SphereGeometry(size, 6, 6);
-    const mat = new THREE.MeshBasicMaterial({
-      color: color,
-      transparent: true,
-      opacity: 1
-    });
-    const p = new THREE.Mesh(geo, mat);
+    let p;
+    if (particlePool.length > 0) {
+      p = particlePool.pop();
+      p.material.color.set(color);
+      p.material.opacity = 1;
+      p.scale.set(1, 1, 1);
+    } else {
+      const geo = new THREE.SphereGeometry(0.1, 6, 6);
+      const mat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 1 });
+      p = new THREE.Mesh(geo, mat);
+      scene.add(p);
+    }
+    const size = 0.8 + Math.random() * 1.2;
+    p.scale.set(size, size, size);
     p.position.set(x, y, z);
     const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
     const speed = 3 + Math.random() * 4;
@@ -496,7 +503,7 @@ function spawnParticleBurst(x, y, z, color, count) {
     p.userData.vz = Math.sin(angle) * speed;
     p.userData.life = 0.5 + Math.random() * 0.3;
     p.userData.maxLife = p.userData.life;
-    scene.add(p);
+    p.visible = true;
     particles.push(p);
   }
 }
@@ -511,11 +518,11 @@ function updateParticles(dt) {
     p.userData.life -= dt;
     const lifeRatio = Math.max(0, p.userData.life / p.userData.maxLife);
     p.material.opacity = lifeRatio;
-    p.scale.setScalar(0.5 + lifeRatio * 0.5);
+    const s = 0.5 + lifeRatio * 0.5;
+    p.scale.set(s, s, s);
     if (p.userData.life <= 0) {
-      scene.remove(p);
-      p.geometry.dispose();
-      p.material.dispose();
+      p.visible = false;
+      particlePool.push(p);
       particles.splice(i, 1);
     }
   }
@@ -1289,7 +1296,7 @@ function quitToMenu() {
   obstacles = [];
   coins.forEach(c => { c.visible = false; });
   coins = [];
-  particles.forEach(p => { scene.remove(p); p.geometry.dispose(); p.material.dispose(); });
+  particles.forEach(p => { p.visible = false; particlePool.push(p); });
   particles.length = 0;
   powerups.forEach(p => { p.visible = false; });
   powerups = [];
@@ -1329,7 +1336,7 @@ function startGame() {
   obstacles = [];
   coins.forEach(c => { c.visible = false; });
   coins = [];
-  particles.forEach(p => { scene.remove(p); p.geometry.dispose(); p.material.dispose(); });
+  particles.forEach(p => { p.visible = false; particlePool.push(p); });
   particles.length = 0;
   trailPositions.length = 0;
   shakeDuration = 0;
