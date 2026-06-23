@@ -418,17 +418,26 @@ function buildStars() {
   scene.add(starField);
 }
 
-function spawnParticleBurst(x, y, z, color) {
-  for (let i = 0; i < 5; i++) {
+function spawnParticleBurst(x, y, z, color, count) {
+  count = count || 8;
+  for (let i = 0; i < count; i++) {
     if (particles.length >= MAX_PARTICLES) break;
-    const geo = new THREE.SphereGeometry(0.05, 4, 4);
-    const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.8 });
+    const size = 0.08 + Math.random() * 0.12;
+    const geo = new THREE.SphereGeometry(size, 6, 6);
+    const mat = new THREE.MeshBasicMaterial({
+      color: color,
+      transparent: true,
+      opacity: 1
+    });
     const p = new THREE.Mesh(geo, mat);
     p.position.set(x, y, z);
-    p.userData.vx = (Math.random() - 0.5) * 5;
-    p.userData.vy = Math.random() * 4 + 1;
-    p.userData.vz = (Math.random() - 0.5) * 3;
-    p.userData.life = 0.3;
+    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+    const speed = 3 + Math.random() * 4;
+    p.userData.vx = Math.cos(angle) * speed;
+    p.userData.vy = Math.random() * 5 + 2;
+    p.userData.vz = Math.sin(angle) * speed;
+    p.userData.life = 0.5 + Math.random() * 0.3;
+    p.userData.maxLife = p.userData.life;
     scene.add(p);
     particles.push(p);
   }
@@ -440,9 +449,11 @@ function updateParticles(dt) {
     p.position.x += p.userData.vx * dt;
     p.position.y += p.userData.vy * dt;
     p.position.z += p.userData.vz * dt;
-    p.userData.vy -= 20 * dt;
+    p.userData.vy -= 25 * dt;
     p.userData.life -= dt;
-    p.material.opacity = Math.max(0, p.userData.life / 0.6);
+    const lifeRatio = Math.max(0, p.userData.life / p.userData.maxLife);
+    p.material.opacity = lifeRatio;
+    p.scale.setScalar(0.5 + lifeRatio * 0.5);
     if (p.userData.life <= 0) {
       scene.remove(p);
       p.geometry.dispose();
@@ -493,7 +504,28 @@ function buildTrail() {
 }
 
 function buildSpeedLines() {
-  // Speed lines disabled — visual clutter
+  const lineMat = new THREE.LineBasicMaterial({
+    color: 0x00ffff,
+    transparent: true,
+    opacity: 0
+  });
+
+  for (let i = 0; i < 20; i++) {
+    const geo = new THREE.BufferGeometry();
+    const positions = new Float32Array(6);
+    positions[0] = 0; positions[1] = 0; positions[2] = 0;
+    positions[3] = 0; positions[4] = 0; positions[5] = -1;
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const line = new THREE.Line(geo, lineMat.clone());
+    line.position.set(
+      (Math.random() - 0.5) * 8,
+      Math.random() * 3 + 0.5,
+      -Math.random() * 60 - 10
+    );
+    line.visible = false;
+    scene.add(line);
+    speedLines.push(line);
+  }
 }
 
 function updateSpeedLines(dt) {
@@ -799,7 +831,7 @@ function animate() {
       c.rotation.y += dt * 3;
       if (prevZ < pz && c.position.z >= pz) {
         if (Math.abs(c.position.x - px) < 0.8 && Math.abs(c.position.y - py) < 0.85) {
-          spawnParticleBurst(c.position.x, c.position.y, c.position.z, 0xffe14d);
+          spawnParticleBurst(c.position.x, c.position.y, c.position.z, 0xffe14d, 10);
           sfxCoin();
           scene.remove(c);
           coins.splice(i, 1);
