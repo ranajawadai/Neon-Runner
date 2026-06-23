@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+// Three.js loaded via CDN script tag (global THREE)
 
 // ---------- Globals ----------
 let scene, camera, renderer, clock;
