@@ -3,6 +3,7 @@
 // ---------- Globals ----------
 let scene, camera, renderer, clock;
 let player, grid, starField, trailLine;
+let composer, bloomPass;
 let obstacles = [];
 let coins = [];
 let speedLines = [];
@@ -253,6 +254,20 @@ function stopBGM() {
 
 const DESPAWN_Z = 8;
 
+function setupBloom() {
+  composer = new THREE.EffectComposer(renderer);
+  const renderPass = new THREE.RenderPass(scene, camera);
+  composer.addPass(renderPass);
+
+  bloomPass = new THREE.UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    0.8,
+    0.4,
+    0.85
+  );
+  composer.addPass(bloomPass);
+}
+
 init();
 
 function init() {
@@ -273,6 +288,8 @@ function init() {
   renderer.domElement.style.left = '0';
   renderer.domElement.style.zIndex = '0';
   document.getElementById('game-container').prepend(renderer.domElement);
+
+  setupBloom();
 
   clock = new THREE.Clock();
 
@@ -889,7 +906,7 @@ function animate() {
     fpsTime = 0;
   }
 
-  renderer.render(scene, camera);
+  composer.render();
 }
 
 function endGame() {
@@ -1198,6 +1215,7 @@ function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
 }
 
 // === MOBILE SWIPE INDICATORS ===
@@ -1226,7 +1244,7 @@ function flashMobileIndicator(id) {
 
 // === SCREENSHOT / SHARE ===
 function captureScreenshot() {
-  renderer.render(scene, camera);
+  composer.render();
   const link = document.createElement('a');
   link.download = 'neonrunner-' + Math.floor(state.score) + '.png';
   link.href = renderer.domElement.toDataURL('image/png');
