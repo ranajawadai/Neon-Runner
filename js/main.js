@@ -18,7 +18,7 @@ import {
 } from './audio.js';
 
 import { shuffle, getCurrentTier, getRandomObstacleType, getCharacterGeometry } from './utils.js';
-import { spawnParticleBurst, updateParticles, clearParticles } from './particles.js';
+import { spawnParticleBurst, updateParticles, clearParticles, initWeather, updateWeather } from './particles.js';
 import { generateDailyChallenges, checkDailyChallenges, renderDailyChallenges } from './challenges.js';
 import { getCurrentTier as getDifficultyTier, showTierChange, resetTierIdx, getTierName, getTierColor } from './difficulty.js';
 
@@ -108,6 +108,7 @@ function init() {
   buildSpeedLines();
   buildParallax();
   buildFlashOverlay();
+  initWeather(scene);
 
   window.addEventListener('resize', onResize);
   setupInput();
@@ -142,11 +143,19 @@ function buildLights() {
   const cyan = new THREE.PointLight(0x00ffff, 1.0, 30);
   cyan.position.set(0, 4, 6);
   scene.add(cyan);
+  
+  // Add fog for depth
+  scene.fog = new THREE.FogExp2(0x0a0a1a, 0.008);
 }
 
 function buildGround() {
   const groundGeo = new THREE.PlaneGeometry(40, 400);
-  const groundMat = new THREE.MeshStandardMaterial({ color: 0x06061a, metalness: 0.5, roughness: 0.5 });
+  const groundMat = new THREE.MeshStandardMaterial({ 
+    color: 0x06061a, 
+    metalness: 0.8, 
+    roughness: 0.2,
+    envMapIntensity: 1.0
+  });
   const ground = new THREE.Mesh(groundGeo, groundMat);
   ground.rotation.x = -Math.PI / 2;
   ground.position.z = gridStartZ;
@@ -978,6 +987,7 @@ function animate() {
   }
 
   updateParticles(dt);
+  updateWeather(dt, state.speed);
   updateShake(dt);
 
   fpsFrames++;

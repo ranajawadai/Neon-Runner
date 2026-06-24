@@ -4,6 +4,8 @@ import { MAX_PARTICLES } from './config.js';
 
 const particles = [];
 const particlePool = [];
+const weatherParticles = [];
+const MAX_WEATHER = 30;
 
 export function spawnParticleBurst(x, y, z, color, count, scene) {
   count = count || 8;
@@ -34,6 +36,41 @@ export function spawnParticleBurst(x, y, z, color, count, scene) {
     p.visible = true;
     particles.push(p);
   }
+}
+
+export function initWeather(scene) {
+  for (let i = 0; i < MAX_WEATHER; i++) {
+    const geo = new THREE.SphereGeometry(0.03, 4, 4);
+    const mat = new THREE.MeshBasicMaterial({ color: 0x88aaff, transparent: true, opacity: 0.4 });
+    const p = new THREE.Mesh(geo, mat);
+    p.position.set(
+      (Math.random() - 0.5) * 20,
+      Math.random() * 8 + 1,
+      (Math.random() - 0.5) * 40 - 20
+    );
+    p.userData.vy = -0.5 - Math.random() * 0.5;
+    p.userData.vx = (Math.random() - 0.5) * 0.2;
+    p.visible = true;
+    scene.add(p);
+    weatherParticles.push(p);
+  }
+}
+
+export function updateWeather(dt, speed) {
+  weatherParticles.forEach(p => {
+    p.position.y += p.userData.vy * dt;
+    p.position.x += p.userData.vx * dt;
+    p.position.z += speed * dt * 0.3;
+    
+    if (p.position.y < 0) {
+      p.position.y = 8 + Math.random() * 2;
+      p.position.x = (Math.random() - 0.5) * 20;
+      p.position.z = -20 - Math.random() * 20;
+    }
+    if (p.position.z > 10) {
+      p.position.z = -40;
+    }
+  });
 }
 
 export function updateParticles(dt) {
