@@ -29,17 +29,57 @@ const OBSTACLE_TYPES = {
 };
 
 const THEMES = {
-  neon: { name: 'Neon', unlock: 0, bg: 0x0a0a1a, gridA: 0x00ffff, gridB: 0xff00d6, ground: 0x06061a, fog: 0x0a0a1a, obstacle: 0xff1463, coin: 0xffe14d, player: 0x00ffff },
-  retro: { name: 'Retro', unlock: 2000, bg: 0x001a00, gridA: 0x00ff00, gridB: 0x88ff00, ground: 0x001200, fog: 0x001a00, obstacle: 0xff3300, coin: 0xffff00, player: 0x00ff00 },
-  space: { name: 'Space', unlock: 5000, bg: 0x000022, gridA: 0x4444ff, gridB: 0x8800ff, ground: 0x000033, fog: 0x000022, obstacle: 0xff0066, coin: 0xffffff, player: 0x6666ff },
-  underwater: { name: 'Aqua', unlock: 10000, bg: 0x001122, gridA: 0x00cccc, gridB: 0x0066ff, ground: 0x001a33, fog: 0x001122, obstacle: 0xff6600, coin: 0x00ffcc, player: 0x00ddff }
+  neon: { 
+    name: 'Neon', unlock: 0, 
+    bg: 0x0a0a1a, gridA: 0x00ffff, gridB: 0xff00d6, 
+    ground: 0x06061a, fog: 0x0a0a1a, 
+    obstacle: 0xff1463, coin: 0xffe14d, player: 0x00ffff,
+    building: 0x1a0033, star: 0x88aaff
+  },
+  retro: { 
+    name: 'Retro', unlock: 2000, 
+    bg: 0x001a00, gridA: 0x00ff00, gridB: 0x88ff00, 
+    ground: 0x001200, fog: 0x001a00, 
+    obstacle: 0xff3300, coin: 0xffff00, player: 0x00ff00,
+    building: 0x002200, star: 0x00ff00
+  },
+  space: { 
+    name: 'Space', unlock: 5000, 
+    bg: 0x000022, gridA: 0x4444ff, gridB: 0x8800ff, 
+    ground: 0x000033, fog: 0x000022, 
+    obstacle: 0xff0066, coin: 0xffffff, player: 0x6666ff,
+    building: 0x000044, star: 0xffffff
+  },
+  underwater: { 
+    name: 'Aqua', unlock: 10000, 
+    bg: 0x001122, gridA: 0x00cccc, gridB: 0x0066ff, 
+    ground: 0x001a33, fog: 0x001122, 
+    obstacle: 0xff6600, coin: 0x00ffcc, player: 0x00ddff,
+    building: 0x002244, star: 0x00cccc
+  },
+  cyber: { 
+    name: 'Cyber', unlock: 15000, 
+    bg: 0x0a001a, gridA: 0xff00ff, gridB: 0x00ffff, 
+    ground: 0x06001a, fog: 0x0a001a, 
+    obstacle: 0x00ffff, coin: 0xff00ff, player: 0xff00ff,
+    building: 0x1a0033, star: 0xff00ff
+  },
+  fire: { 
+    name: 'Inferno', unlock: 25000, 
+    bg: 0x1a0500, gridA: 0xff4400, gridB: 0xffaa00, 
+    ground: 0x1a0800, fog: 0x1a0500, 
+    obstacle: 0xff0000, coin: 0xffdd00, player: 0xff4400,
+    building: 0x220800, star: 0xff6600
+  }
 };
 
 const CHARACTERS = [
   { name: 'Runner', shape: 'icosa', color: 0x00ffff, unlock: 0 },
   { name: 'Ghost', shape: 'octa', color: 0xcc66ff, unlock: 1000 },
   { name: 'Star', shape: 'dodeca', color: 0xffdd00, unlock: 3000 },
-  { name: 'Blaze', shape: 'torus', color: 0xff4400, unlock: 7000 }
+  { name: 'Blaze', shape: 'torus', color: 0xff4400, unlock: 7000 },
+  { name: 'Neon', shape: 'icosa', color: 0xff00ff, unlock: 12000 },
+  { name: 'Frost', shape: 'dodeca', color: 0x00ffff, unlock: 20000 }
 ];
 
 const ACHIEVEMENTS = [
@@ -293,6 +333,11 @@ function sfxTierUp() {
   playTone(554, 0.1, 'sine', 0.4);
   playTone(659, 0.1, 'sine', 0.4);
   playTone(880, 0.2, 'sine', 0.3);
+}
+
+function sfxThemeChange() {
+  playTone(330, 0.1, 'sine', 0.3);
+  playTone(440, 0.15, 'sine', 0.25);
 }
 
 let lastTierIdx = 0;
@@ -767,11 +812,25 @@ function applyTheme(themeId) {
   obstacleMat.emissive.set(t.obstacle);
   coinMat.color.set(t.coin);
   coinMat.emissive.set(t.coin);
+  
+  // Update star field color
+  if (starField && starField.material) {
+    starField.material.color.set(t.star || 0x88aaff);
+  }
+  
+  // Update building colors
   bgLayers.forEach((layer, i) => {
-    if (layer.userData.isBuilding) {
-      layer.material.color.set(t.bg);
+    if (layer.userData.isBuilding || layer.geometry.type === 'BoxGeometry') {
+      layer.material.color.set(t.building || t.bg);
     }
   });
+  
+  // Update player color if character matches theme
+  const char = CHARACTERS[state.character];
+  if (char && char.color === 0x00ffff) {
+    playerMat.color.set(t.player);
+    playerMat.emissive.set(t.player);
+  }
 }
 
 function checkAchievements() {
@@ -1324,6 +1383,7 @@ function setupUI() {
       themeSel.querySelectorAll('.selector-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       applyTheme(key);
+      sfxThemeChange();
     });
     themeSel.appendChild(btn);
   });
