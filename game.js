@@ -19,6 +19,15 @@ const POWERUP_TYPES = [
   { type: 'multi', color: 0xffdd00, label: 'x2' }
 ];
 
+const OBSTACLE_TYPES = {
+  cube: { geo: 0, color: 0xff1463, behavior: 'static' },
+  pyramid: { geo: 1, color: 0xff1463, behavior: 'static' },
+  wall: { geo: 2, color: 0xff1463, behavior: 'static' },
+  laser: { geo: 3, color: 0xff0044, behavior: 'pulsing', pulseSpeed: 2 },
+  spinner: { geo: 4, color: 0xffaa00, behavior: 'spinning', spinSpeed: 5 },
+  slider: { geo: 5, color: 0xff6600, behavior: 'sliding', slideSpeed: 3 }
+};
+
 const THEMES = {
   neon: { name: 'Neon', unlock: 0, bg: 0x0a0a1a, gridA: 0x00ffff, gridB: 0xff00d6, ground: 0x06061a, fog: 0x0a0a1a, obstacle: 0xff1463, coin: 0xffe14d, player: 0x00ffff },
   retro: { name: 'Retro', unlock: 2000, bg: 0x001a00, gridA: 0x00ff00, gridB: 0x88ff00, ground: 0x001200, fog: 0x001a00, obstacle: 0xff3300, coin: 0xffff00, player: 0x00ff00 },
@@ -106,21 +115,46 @@ function getFromPool(pool, createFn) {
   return obj;
 }
 
-function resetObstacle(mesh, x) {
-  const geo = OBSTACLE_GEOMETRIES[Math.floor(Math.random() * OBSTACLE_GEOMETRIES.length)];
+function resetObstacle(mesh, x, typeKey) {
+  const type = typeKey || 'cube';
+  const obstacleType = OBSTACLE_TYPES[type];
+  const geoIdx = obstacleType.geo;
+  const geo = OBSTACLE_GEOMETRIES[geoIdx];
+  
   mesh.geometry.dispose();
   mesh.geometry = geo;
   mesh.position.set(x, 0.6, -80);
   mesh.visible = true;
-  mesh.userData.moving = Math.random() < 0.3;
+  mesh.userData.type = type;
+  mesh.userData.behavior = obstacleType.behavior;
   mesh.userData.shifted = false;
   mesh.userData.nearMissed = false;
-  if (mesh.userData.moving) {
-    mesh.material = obstacleMat.clone();
-    mesh.material.emissive.set(0xff6600);
-  } else {
-    mesh.material = obstacleMat;
+  mesh.userData.pulsePhase = 0;
+  mesh.userData.slideDir = Math.random() < 0.5 ? -1 : 1;
+  mesh.userData.slideOrigin = x;
+  
+  // Set material based on type
+  if (mesh.material !== obstacleMat && mesh.material !== coinMat) {
+    mesh.material.dispose();
   }
+  mesh.material = obstacleMat.clone();
+  mesh.material.color.set(obstacleType.color);
+  mesh.material.emissive.set(obstacleType.color);
+  
+  // Type-specific setup
+  if (type === 'laser') {
+    mesh.material.emissiveIntensity = 1.0;
+    mesh.scale.set(1, 1, 1);
+  } else if (type === 'spinner') {
+    mesh.rotation.set(0, 0, 0);
+    mesh.scale.set(1, 1, 1);
+  } else if (type === 'slider') {
+    mesh.position.y = 0.9;
+    mesh.scale.set(1, 1, 1);
+  } else {
+    mesh.scale.set(1, 1, 1);
+  }
+  
   return mesh;
 }
 
@@ -148,9 +182,12 @@ let flashTimeout = null;
 
 // shared geometry
 const OBSTACLE_GEOMETRIES = [
-  new THREE.BoxGeometry(1.2, 1.2, 1.2, 3, 3, 3),
-  new THREE.ConeGeometry(0.7, 1.4, 24),
-  new THREE.BoxGeometry(2.0, 0.8, 0.8, 4, 2, 2)
+  new THREE.BoxGeometry(1.2, 1.2, 1.2, 3, 3, 3),           // cube
+  new THREE.ConeGeometry(0.7, 1.4, 24),                      // pyramid
+  new THREE.BoxGeometry(2.0, 0.8, 0.8, 4, 2, 2),            // wall
+  new THREE.BoxGeometry(3.0, 0.15, 0.15, 8, 1, 1),          // laser beam
+  new THREE.OctahedronGeometry(0.8, 0),                       // spinner
+  new THREE.BoxGeometry(1.8, 1.8, 0.4, 2, 2, 1)             // slider
 ];
 const COIN_GEOMETRY = new THREE.TorusGeometry(0.45, 0.16, 20, 40);
 
@@ -249,6 +286,42 @@ function sfxPowerup() {
   playTone(523, 0.08, 'sine', 0.3);
   playTone(659, 0.08, 'sine', 0.3);
   playTone(784, 0.12, 'sine', 0.3);
+}
+
+function sfxTierUp() {
+  playTone(440, 0.1, 'sine', 0.4);
+  playTone(554, 0.1, 'sine', 0.4);
+  playTone(659, 0.1, 'sine', 0.4);
+  playTone(880, 0.2, 'sine', 0.3);
+}
+
+let lastTierIdx = 0;
+
+function showTierChange(newTier) {
+  const tierIdx = DIFFICULTY_TIERS.indexOf(newTier);
+  if (tierIdx > lastTierIdx) {
+    lastTierIdx = tierIdx;
+    sfxTierUp();
+    
+    // Show celebration flash
+    const flash = document.createElement('div');
+    flash.className = 'tier-up-flash';
+    document.body.appendChild(flash);
+    setTimeout(() => flash.remove(), 1000);
+    
+    // Show tier name
+    const tierNames = ['BEGINNER', 'ROOKIE', 'PRO', 'EXPERT', 'LEGEND'];
+    const el = document.createElement('div');
+    el.textContent = tierNames[tierIdx] + '!';
+    el.style.cssText = 'position:fixed;top:25%;left:50%;transform:translate(-50%,-50%);font-size:56px;font-weight:900;color:#00ffff;text-shadow:0 0 30px #00ffff,0 0 60px #00ff88;pointer-events:none;z-index:100;transition:all 1s ease-out;opacity:1;';
+    document.body.appendChild(el);
+    requestAnimationFrame(() => {
+      el.style.top = '15%';
+      el.style.opacity = '0';
+      el.style.transform = 'translate(-50%,-50%) scale(1.5)';
+    });
+    setTimeout(() => el.remove(), 1100);
+  }
 }
 
 function startBGM() {
@@ -767,8 +840,10 @@ function shuffle(arr) {
 
 function spawn() {
   spawnPowerup();
+  const tier = getCurrentTier();
   const r = Math.random();
-  if (r < 0.6) {
+  
+  if (r < 0.6 * tier.spawnRate) {
     const numObs = Math.random() < 0.35 ? 2 : 1;
     const laneIdxs = shuffle([0, 1, 2]).slice(0, numObs);
     laneIdxs.forEach(l => spawnObstacle(LANES[l]));
@@ -780,14 +855,38 @@ function spawn() {
   }
 }
 
+// Difficulty progression
+const DIFFICULTY_TIERS = [
+  { minScore: 0, maxScore: 1000, speed: 20, obstacleTypes: ['cube', 'pyramid', 'wall'], spawnRate: 1.0 },
+  { minScore: 1000, maxScore: 3000, speed: 25, obstacleTypes: ['cube', 'pyramid', 'wall', 'slider'], spawnRate: 0.9 },
+  { minScore: 3000, maxScore: 6000, speed: 30, obstacleTypes: ['cube', 'pyramid', 'wall', 'spinner', 'slider'], spawnRate: 0.8 },
+  { minScore: 6000, maxScore: 10000, speed: 35, obstacleTypes: ['cube', 'pyramid', 'wall', 'laser', 'spinner', 'slider'], spawnRate: 0.7 },
+  { minScore: 10000, maxScore: Infinity, speed: 42, obstacleTypes: ['cube', 'pyramid', 'wall', 'laser', 'spinner', 'slider'], spawnRate: 0.6 }
+];
+
+function getCurrentTier() {
+  const score = state.score;
+  for (let i = DIFFICULTY_TIERS.length - 1; i >= 0; i--) {
+    if (score >= DIFFICULTY_TIERS[i].minScore) return DIFFICULTY_TIERS[i];
+  }
+  return DIFFICULTY_TIERS[0];
+}
+
+function getRandomObstacleType() {
+  const tier = getCurrentTier();
+  const types = tier.obstacleTypes;
+  return types[Math.floor(Math.random() * types.length)];
+}
+
 function spawnObstacle(x) {
+  const type = getRandomObstacleType();
   const m = getFromPool(obstaclePool, () => {
     const geo = OBSTACLE_GEOMETRIES[0];
     const mesh = new THREE.Mesh(geo, obstacleMat);
     scene.add(mesh);
     return mesh;
   });
-  resetObstacle(m, x);
+  resetObstacle(m, x, type);
   obstacles.push(m);
 }
 
@@ -841,6 +940,14 @@ function animate() {
 
     state.speed = Math.min(state.maxSpeed, state.speed + 0.25 * dt);
     state.score += state.speed * dt;
+    
+    // Update difficulty tier based on score
+    const tier = getCurrentTier();
+    showTierChange(tier);
+    if (state.speed < tier.speed) {
+      state.speed = Math.min(tier.speed, state.speed + 2 * dt);
+    }
+    
     updateHUD();
 
     targetX = LANES[currentLane];
@@ -872,19 +979,39 @@ function animate() {
       const o = obstacles[i];
       o.position.z += dz;
       const oz = o.position.z;
+      const behavior = o.userData.behavior;
 
-      // Moving obstacle: shift lanes when close to player
-      if (o.userData.moving && oz > -40 && oz < -10 && !o.userData.shifted) {
-        const currentLaneIdx = LANES.indexOf(o.position.x);
-        if (currentLaneIdx !== -1) {
-          const dir = Math.random() < 0.5 ? -1 : 1;
-          const newIdx = Math.max(0, Math.min(2, currentLaneIdx + dir));
-          if (newIdx !== currentLaneIdx) {
-            o.position.x = LANES[newIdx];
-            o.userData.shifted = true;
-            spawnParticleBurst(o.position.x, o.position.y, o.position.z, 0xff4400);
+      // Type-specific behaviors
+      if (behavior === 'spinning') {
+        o.rotation.y += dt * 5;
+        o.rotation.x += dt * 3;
+      } else if (behavior === 'pulsing') {
+        o.userData.pulsePhase += dt * 4;
+        const pulse = Math.sin(o.userData.pulsePhase) * 0.5 + 0.5;
+        o.material.opacity = 0.3 + pulse * 0.7;
+        o.material.transparent = true;
+        o.scale.y = 0.5 + pulse * 0.5;
+      } else if (behavior === 'sliding') {
+        const slideRange = 1.5;
+        o.position.x += o.userData.slideDir * dt * 2;
+        if (Math.abs(o.position.x - o.userData.slideOrigin) > slideRange) {
+          o.userData.slideDir *= -1;
+        }
+      } else if (behavior === 'static' && o.userData.shifted === false && oz > -40 && oz < -10) {
+        // Legacy moving obstacle behavior for static types
+        if (Math.random() < 0.3) {
+          const currentLaneIdx = LANES.indexOf(o.position.x);
+          if (currentLaneIdx !== -1) {
+            const dir = Math.random() < 0.5 ? -1 : 1;
+            const newIdx = Math.max(0, Math.min(2, currentLaneIdx + dir));
+            if (newIdx !== currentLaneIdx) {
+              o.position.x = LANES[newIdx];
+              o.userData.shifted = true;
+              spawnParticleBurst(o.position.x, o.position.y, o.position.z, 0xff4400);
+            }
           }
         }
+        o.userData.shifted = true;
       }
 
       if (Math.abs(o.position.x - px) < 0.85 && Math.abs(oz - pz) < 1.0 && Math.abs(o.position.y - py) < 0.95) {
@@ -1325,6 +1452,7 @@ function startGame() {
   state.gamesPlayed++;
   localStorage.setItem('neonRunnerGames', state.gamesPlayed);
   lastMilestone = 0;
+  lastTierIdx = 0;
   currentLane = 1;
   laneVelocity = 0;
   velocityY = 0;
@@ -1378,6 +1506,16 @@ function updateHUD() {
     comboEl.classList.add('combo-pulse');
   }
   comboEl.textContent = comboText;
+
+  // Difficulty tier display
+  const tier = getCurrentTier();
+  const tierNames = ['BEGINNER', 'ROOKIE', 'PRO', 'EXPERT', 'LEGEND'];
+  const tierIdx = DIFFICULTY_TIERS.indexOf(tier);
+  const tierEl = document.getElementById('difficulty-tier');
+  if (tierEl) {
+    tierEl.textContent = tierNames[tierIdx] || 'BEGINNER';
+    tierEl.style.color = ['#00ffff', '#00ff88', '#ffdd00', '#ff6600', '#ff0044'][tierIdx] || '#00ffff';
+  }
 
   // Power-up indicators
   const shieldBadge = document.getElementById('shield-badge');

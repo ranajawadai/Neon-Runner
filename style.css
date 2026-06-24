@@ -696,3 +696,52 @@ input[type="range"]:hover {
     text-shadow: none;
   }
 }
+
+/* Difficulty tier display */
+#difficulty-tier {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  transition: color 0.3s;
+}
+
+/* Tier change celebration */
+.tier-up-flash {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(0, 255, 255, 0.3) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 15;
+  opacity: 0;
+  animation: tierFlash 1s ease-out forwards;
+}
+
+@keyframes tierFlash {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* New obstacle type indicators */
+.obstacle-laser {
+  box-shadow: 0 0 20px rgba(255, 0, 68, 0.8);
+}
+
+.obstacle-spinner {
+  animation: spinnerRotate 0.5s linear infinite;
+}
+
+@keyframes spinnerRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Tier badge in start screen */
+.tier-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin: 4px;
+}
