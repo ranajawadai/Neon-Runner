@@ -1,0 +1,31 @@
+{
+  "name": "neon-runner",
+  "version": "2.0.0",
+  "description": "Cyberpunk 3D endless runner with bloom post-processing",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "lint": "eslint js/",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "jsdom": "^29.1.1",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "keywords": [
+    "game",
+    "three.js",
+    "browser-game",
+    "endless-runner",
+    "cyberpunk"
+  ],
+  "author": "Rana Jawad",
+  "license": "MIT"
+}
