@@ -583,9 +583,29 @@ input[type="range"]:hover {
 }
 
 /* Loading bar shimmer */
+.loading-bar-container {
+  width: 200px;
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 16px auto;
+}
+
 .loading-bar {
   position: relative;
   overflow: hidden;
+  height: 100%;
+  background: #00ffff;
+  width: 0%;
+  transition: width 0.3s;
+}
+
+.loading-text {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 2px;
+  margin-top: 8px;
 }
 
 .loading-bar::after {

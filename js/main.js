@@ -311,7 +311,6 @@ function resetObstacle(mesh, x, typeKey) {
   const geoIdx = obstacleType.geo;
   const geo = OBSTACLE_GEOMETRIES[geoIdx];
   
-  mesh.geometry.dispose();
   mesh.geometry = geo;
   mesh.position.set(x, 0.6, -80);
   mesh.visible = true;
@@ -512,6 +511,7 @@ function applyTheme(themeId) {
   const t = THEMES[themeId];
   if (!t) return;
   scene.background = new THREE.Color(t.bg);
+  if (scene.fog) scene.fog.color.set(t.fog || t.bg);
   grid.material.color.set(t.gridA);
   grid.material.opacity = 0.35;
   obstacleMat.color.set(t.obstacle);
@@ -646,6 +646,7 @@ function quitToMenu() {
   state.multiplier = 1;
   state.shield = false;
   state.magnet = false;
+  document.getElementById('hud').classList.add('hidden');
   showScreen('start-screen');
 }
 
@@ -713,10 +714,12 @@ function endGame() {
   updateScore(state.score);
   checkAchievements();
   checkDailyChallenges();
+  updateAnalytics();
   saveState();
   showShareButton();
+  document.getElementById('hud').classList.add('hidden');
   document.getElementById('final-score').textContent = Math.floor(state.score);
-  document.getElementById('final-coins').textContent = state.coins;
+  document.getElementById('final-coins').textContent = state.runCoins || 0;
   document.getElementById('best-score').textContent = state.best;
   document.getElementById('final-daily').textContent = state.dailyBest;
   document.getElementById('game-over-screen').classList.remove('hidden');
@@ -841,9 +844,7 @@ function animate() {
           state.shield = false;
           state.shieldTimer = 0;
           spawnParticleBurst(o.position.x, o.position.y, o.position.z, 0x00ff88, 8, scene);
-          scene.remove(o);
           o.visible = false;
-          if (o.material !== obstacleMat) o.material.dispose();
           obstacles.splice(i, 1);
           continue;
         }
@@ -851,9 +852,7 @@ function animate() {
         return;
       }
       if (oz > DESPAWN_Z) {
-        scene.remove(o);
-        o.geometry.dispose();
-        if (o.material !== obstacleMat) o.material.dispose();
+        o.visible = false;
         obstacles.splice(i, 1);
       }
     }
@@ -885,9 +884,9 @@ function animate() {
           const sy = (-vec.y * 0.5 + 0.5) * window.innerHeight;
           const pts = Math.floor(10 * state.multiplier);
           showScoreFly(sx, sy, '+' + pts);
-          scene.remove(c);
+          c.visible = false;
           coins.splice(i, 1);
-          state.coins++;
+          addCoins(1);
           state.combo++;
           if (state.combo >= 5) sfxCombo();
           state.multiplier = 1 + Math.floor(state.combo / 5) * 0.5;

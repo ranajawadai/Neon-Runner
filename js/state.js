@@ -1,6 +1,8 @@
 // Game State Management
 
-const todayDate = new Date().toDateString();
+function getTodayDate() {
+  return new Date().toDateString();
+}
 
 export const state = {
   running: false,
@@ -11,6 +13,7 @@ export const state = {
   maxSpeed: 42,
   score: 0,
   coins: Number(localStorage.getItem('neonRunnerCoins') || '0'),
+  runCoins: 0,
   best: Number(localStorage.getItem('neonRunnerBest') || 0),
   combo: 0,
   multiplier: 1,
@@ -21,14 +24,15 @@ export const state = {
   theme: localStorage.getItem('neonRunnerTheme') || 'neon',
   character: Number(localStorage.getItem('neonRunnerChar') || '0'),
   gamesPlayed: Number(localStorage.getItem('neonRunnerGames') || '0'),
-  gamesPlayedToday: Number(localStorage.getItem('neonRunnerGames_' + todayDate) || '0'),
+  gamesPlayedToday: Number(localStorage.getItem('neonRunnerGames_' + getTodayDate()) || '0'),
   unlockedAchievements: JSON.parse(localStorage.getItem('neonRunnerAchievements') || '[]'),
-  dailyBest: Number(localStorage.getItem('neonRunnerDaily_' + todayDate) || '0'),
+  dailyBest: Number(localStorage.getItem('neonRunnerDaily_' + getTodayDate()) || '0'),
   streak: Number(localStorage.getItem('neonRunnerStreak') || '0'),
   lastPlayDate: localStorage.getItem('neonRunnerLastPlay') || ''
 };
 
 export function saveState() {
+  const todayDate = getTodayDate();
   localStorage.setItem('neonRunnerCoins', state.coins);
   localStorage.setItem('neonRunnerBest', state.best);
   localStorage.setItem('neonRunnerGames', state.gamesPlayed);
@@ -47,6 +51,7 @@ export function resetGameState() {
   state.isPaused = false;
   state.speed = state.baseSpeed;
   state.score = 0;
+  state.runCoins = 0;
   state.combo = 0;
   state.multiplier = 1;
   state.shield = false;
@@ -56,6 +61,7 @@ export function resetGameState() {
 }
 
 export function updateStreak() {
+  const todayDate = getTodayDate();
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toDateString();
@@ -83,6 +89,7 @@ export function updateScore(newScore) {
 
 export function addCoins(amount) {
   state.coins += amount;
+  state.runCoins += amount;
   saveState();
 }
 
