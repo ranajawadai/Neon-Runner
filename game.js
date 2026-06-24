@@ -1365,7 +1365,7 @@ function updateHUD() {
   document.getElementById('score').textContent = Math.floor(state.score);
   document.getElementById('coins').textContent = state.coins;
   const speedStr = (state.speed / state.baseSpeed).toFixed(1) + 'x';
-  const powerStr = (state.magnet ? ' [MAGNET]' : '') + (state.shield ? ' [SHIELD]' : '');
+  const powerStr = '';
   document.getElementById('speed').textContent = speedStr + powerStr;
 
   const comboEl = document.getElementById('combo');
@@ -1377,6 +1377,18 @@ function updateHUD() {
     comboEl.classList.add('combo-pulse');
   }
   comboEl.textContent = comboText;
+
+  // Power-up indicators
+  const shieldBadge = document.getElementById('shield-badge');
+  const magnetBadge = document.getElementById('magnet-badge');
+  if (shieldBadge) {
+    shieldBadge.classList.toggle('active', state.shield);
+    shieldBadge.querySelector('.timer').textContent = state.shield ? Math.ceil(state.shieldTimer) + 's' : '';
+  }
+  if (magnetBadge) {
+    magnetBadge.classList.toggle('active', state.magnet);
+    magnetBadge.querySelector('.timer').textContent = state.magnet ? Math.ceil(state.magnetTimer) + 's' : '';
+  }
 }
 
 function onResize() {

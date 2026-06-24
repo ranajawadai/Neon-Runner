@@ -429,6 +429,53 @@ body {
   opacity: 1;
 }
 
+/* Power-up indicators */
+.powerup-indicator {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.powerup-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.powerup-badge.active {
+  opacity: 1;
+}
+
+.powerup-badge.shield {
+  background: rgba(0, 255, 136, 0.2);
+  border: 1px solid rgba(0, 255, 136, 0.5);
+  color: #00ff88;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+}
+
+.powerup-badge.magnet {
+  background: rgba(255, 0, 255, 0.2);
+  border: 1px solid rgba(255, 0, 255, 0.5);
+  color: #ff00ff;
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+}
+
+.powerup-badge .timer {
+  font-size: 9px;
+  opacity: 0.7;
+  margin-left: 4px;
+}
+
 .score-fly {
   position: fixed;
   font-size: 18px;
