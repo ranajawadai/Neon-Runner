@@ -892,6 +892,7 @@ function animate() {
           spawnParticleBurst(o.position.x, o.position.y, o.position.z, 0x00ff88);
           scene.remove(o);
           o.visible = false;
+          if (o.material !== obstacleMat) o.material.dispose();
           obstacles.splice(i, 1);
           continue;
         }
@@ -901,6 +902,7 @@ function animate() {
       if (oz > DESPAWN_Z) {
         scene.remove(o);
         o.geometry.dispose();
+        if (o.material !== obstacleMat) o.material.dispose();
         obstacles.splice(i, 1);
       }
     }
