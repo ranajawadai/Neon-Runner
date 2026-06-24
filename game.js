@@ -93,6 +93,17 @@ const ACHIEVEMENTS = [
   { id: 'games10', name: 'Dedicated', desc: 'Play 10 games', icon: '🎮', check: s => s.gamesPlayed >= 10 }
 ];
 
+const DAILY_CHALLENGES = [
+  { id: 'daily_score5k', name: 'Score 5,000', desc: 'Score 5,000 points in one run', reward: 50, check: s => s.score >= 5000 },
+  { id: 'daily_score10k', name: 'Score 10,000', desc: 'Score 10,000 points in one run', reward: 100, check: s => s.score >= 10000 },
+  { id: 'daily_coins50', name: 'Collect 50 Coins', desc: 'Collect 50 coins in one run', reward: 75, check: s => s.coins >= 50 },
+  { id: 'daily_coins100', name: 'Collect 100 Coins', desc: 'Collect 100 coins in one run', reward: 150, check: s => s.coins >= 100 },
+  { id: 'daily_combo5', name: '5x Combo', desc: 'Reach 5x combo', reward: 40, check: s => s.combo >= 5 },
+  { id: 'daily_combo10', name: '10x Combo', desc: 'Reach 10x combo', reward: 100, check: s => s.combo >= 10 },
+  { id: 'daily_nododge', name: 'Perfect Run', desc: 'Survive 500m without hitting obstacles', reward: 200, check: s => Math.floor(s.score / 10) >= 500 },
+  { id: 'daily_games3', name: 'Play 3 Games', desc: 'Play 3 games today', reward: 30, check: s => s.gamesPlayedToday >= 3 }
+];
+
 const state = {
   running: false,
   gameOver: false,
@@ -101,7 +112,7 @@ const state = {
   baseSpeed: 20,
   maxSpeed: 42,
   score: 0,
-  coins: 0,
+  coins: Number(localStorage.getItem('neonRunnerCoins') || '0'),
   best: Number(localStorage.getItem('neonRunnerBest') || 0),
   combo: 0,
   multiplier: 1,
@@ -112,9 +123,84 @@ const state = {
   theme: localStorage.getItem('neonRunnerTheme') || 'neon',
   character: Number(localStorage.getItem('neonRunnerChar') || '0'),
   gamesPlayed: Number(localStorage.getItem('neonRunnerGames') || '0'),
+  gamesPlayedToday: Number(localStorage.getItem('neonRunnerGames_' + todayDate) || '0'),
   unlockedAchievements: JSON.parse(localStorage.getItem('neonRunnerAchievements') || '[]'),
-  dailyBest: Number(localStorage.getItem('neonRunnerDaily_' + new Date().toDateString()) || '0')
+  dailyBest: Number(localStorage.getItem('neonRunnerDaily_' + todayDate) || '0'),
+  streak: Number(localStorage.getItem('neonRunnerStreak') || '0'),
+  lastPlayDate: localStorage.getItem('neonRunnerLastPlay') || ''
 };
+
+// Daily challenge state
+let dailyChallenges = [];
+let dailyChallengeProgress = {};
+let todayDate = new Date().toDateString();
+
+function getDailySeed() {
+  const d = new Date();
+  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+}
+
+function seededRandom(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+function generateDailyChallenges() {
+  const savedDate = localStorage.getItem('neonRunnerChallengeDate');
+  if (savedDate === todayDate) {
+    dailyChallenges = JSON.parse(localStorage.getItem('neonRunnerChallenges') || '[]');
+    dailyChallengeProgress = JSON.parse(localStorage.getItem('neonRunnerChallengeProgress') || '{}');
+    return;
+  }
+  
+  // Generate new challenges for today
+  const rng = seededRandom(getDailySeed());
+  const shuffled = [...DAILY_CHALLENGES].sort(() => rng() - 0.5);
+  dailyChallenges = shuffled.slice(0, 3);
+  dailyChallengeProgress = {};
+  dailyChallenges.forEach(c => { dailyChallengeProgress[c.id] = false; });
+  
+  localStorage.setItem('neonRunnerChallengeDate', todayDate);
+  localStorage.setItem('neonRunnerChallenges', JSON.stringify(dailyChallenges));
+  localStorage.setItem('neonRunnerChallengeProgress', JSON.stringify(dailyChallengeProgress));
+}
+
+function checkDailyChallenges() {
+  let rewards = 0;
+  dailyChallenges.forEach(c => {
+    if (!dailyChallengeProgress[c.id] && c.check(state)) {
+      dailyChallengeProgress[c.id] = true;
+      rewards += c.reward;
+    }
+  });
+  if (rewards > 0) {
+    state.coins += rewards;
+    localStorage.setItem('neonRunnerCoins', state.coins);
+    localStorage.setItem('neonRunnerChallengeProgress', JSON.stringify(dailyChallengeProgress));
+    showChallengeComplete(rewards);
+  }
+}
+
+function showChallengeComplete(rewards) {
+  const el = document.createElement('div');
+  el.innerHTML = '<div style="font-size:24px">🎯</div><div style="font-size:16px;font-weight:bold;color:#00ff88">Challenge Complete!</div><div style="font-size:14px;color:#ffe14d">+' + rewards + ' coins</div>';
+  el.style.cssText = 'position:fixed;top:20px;right:20px;background:rgba(10,10,26,0.95);border:2px solid #00ff88;border-radius:12px;padding:16px 20px;text-align:center;z-index:100;transition:all 0.5s ease-out;opacity:0;transform:translateX(100px);box-shadow:0 0 20px rgba(0,255,136,0.3);';
+  document.body.appendChild(el);
+  requestAnimationFrame(() => {
+    el.style.opacity = '1';
+    el.style.transform = 'translateX(0)';
+  });
+  sfxPowerup();
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(100px)';
+    setTimeout(() => el.remove(), 500);
+  }, 3000);
+}
+
 let lastCombo = 0;
 let laneVelocity = 0;
 let showScreenTimeout = null;
@@ -998,7 +1084,8 @@ function animate() {
   if (state.running && !state.gameOver && !state.isPaused) {
 
     state.speed = Math.min(state.maxSpeed, state.speed + 0.25 * dt);
-    state.score += state.speed * dt;
+    const streakMultiplier = 1 + Math.min(state.streak * 0.1, 0.5);
+    state.score += state.speed * dt * streakMultiplier;
     
     // Update difficulty tier based on score
     const tier = getCurrentTier();
@@ -1267,14 +1354,16 @@ function endGame() {
   }
   if (state.score > state.dailyBest) {
     state.dailyBest = Math.floor(state.score);
-    localStorage.setItem('neonRunnerDaily_' + new Date().toDateString(), state.dailyBest);
+    localStorage.setItem('neonRunnerDaily_' + todayDate, state.dailyBest);
   }
   checkAchievements();
+  checkDailyChallenges();
   updateAnalytics();
   showShareButton();
   document.getElementById('final-score').textContent = Math.floor(state.score);
   document.getElementById('final-coins').textContent = state.coins;
   document.getElementById('best-score').textContent = state.best;
+  document.getElementById('final-daily').textContent = state.dailyBest;
   document.getElementById('game-over-screen').classList.remove('hidden');
 }
 
@@ -1392,6 +1481,12 @@ function setupUI() {
   document.getElementById('menu-best').textContent = '🏆 Best: ' + state.best;
   document.getElementById('menu-daily').textContent = '📅 Daily: ' + state.dailyBest;
   document.getElementById('menu-games').textContent = '🎮 Games: ' + state.gamesPlayed;
+  document.getElementById('menu-coins').textContent = '💰 Coins: ' + state.coins;
+  document.getElementById('menu-streak').textContent = '🔥 Streak: ' + state.streak;
+
+  // Generate and render daily challenges
+  generateDailyChallenges();
+  renderDailyChallenges();
 
   // Achievements button
   document.getElementById('achievements-btn').addEventListener('click', () => {
@@ -1413,6 +1508,27 @@ function setupUI() {
   });
   sens.addEventListener('input', () => {
     document.getElementById('sensitivity-val').textContent = sens.value;
+  });
+}
+
+function renderDailyChallenges() {
+  const list = document.getElementById('challenge-list');
+  if (!list) return;
+  list.innerHTML = '';
+  
+  dailyChallenges.forEach(c => {
+    const completed = dailyChallengeProgress[c.id];
+    const item = document.createElement('div');
+    item.className = 'challenge-item' + (completed ? ' completed' : '');
+    item.innerHTML = `
+      <div class="challenge-info">
+        <div class="challenge-name">${c.name}</div>
+        <div class="challenge-desc">${c.desc}</div>
+      </div>
+      <div class="challenge-reward">+${c.reward} 💰</div>
+      <div class="challenge-check">✓</div>
+    `;
+    list.appendChild(item);
   });
 }
 
@@ -1508,9 +1624,26 @@ function startGame() {
   state.gameOver = false;
   state.speed = state.baseSpeed;
   state.score = 0;
-  state.coins = 0;
   state.gamesPlayed++;
+  state.gamesPlayedToday++;
   localStorage.setItem('neonRunnerGames', state.gamesPlayed);
+  localStorage.setItem('neonRunnerGames_' + todayDate, state.gamesPlayedToday);
+  
+  // Update streak
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toDateString();
+  if (state.lastPlayDate === todayDate) {
+    // Already played today, no streak change
+  } else if (state.lastPlayDate === yesterdayStr) {
+    state.streak++;
+  } else if (state.lastPlayDate !== todayDate) {
+    state.streak = 1;
+  }
+  state.lastPlayDate = todayDate;
+  localStorage.setItem('neonRunnerStreak', state.streak);
+  localStorage.setItem('neonRunnerLastPlay', state.lastPlayDate);
+  
   lastMilestone = 0;
   lastTierIdx = 0;
   currentLane = 1;

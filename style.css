@@ -745,3 +745,85 @@ input[type="range"]:hover {
   letter-spacing: 1px;
   margin: 4px;
 }
+
+/* Daily challenges */
+.daily-challenges {
+  margin: 16px 0;
+  min-width: 280px;
+}
+
+.daily-header {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.challenge-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.challenge-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  transition: all 0.2s;
+}
+
+.challenge-item.completed {
+  border-color: rgba(0,255,136,0.3);
+  background: rgba(0,255,136,0.05);
+}
+
+.challenge-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.challenge-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.challenge-desc {
+  font-size: 10px;
+  color: rgba(255,255,255,0.4);
+}
+
+.challenge-reward {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffe14d;
+}
+
+.challenge-check {
+  font-size: 16px;
+  color: #00ff88;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.challenge-item.completed .challenge-check {
+  opacity: 1;
+}
+
+/* Coin display in HUD */
+.coin-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.coin-icon {
+  font-size: 14px;
+}
