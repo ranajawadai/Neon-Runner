@@ -114,6 +114,7 @@ function init() {
   setupInput();
   setupUI();
   initAudio();
+  showGestureTutorial();
 
   animate();
   simulateLoading();
@@ -1153,23 +1154,72 @@ function createMobileIndicators() {
   if (!('ontouchstart' in window)) return;
   const indicators = document.createElement('div');
   indicators.id = 'mobile-indicators';
-  indicators.innerHTML = '<div id="mi-left" class="mi">◀</div><div id="mi-right" class="mi">▶</div><div id="mi-jump" class="mi">▲</div>';
-  indicators.style.cssText = 'position:fixed;bottom:20px;left:0;right:0;display:flex;justify-content:center;gap:20px;z-index:50;pointer-events:none;';
+  indicators.innerHTML = `
+    <div id="mi-left" class="mi">
+      <span class="mi-icon">◀</span>
+      <span class="mi-label">LEFT</span>
+    </div>
+    <div id="mi-jump" class="mi">
+      <span class="mi-icon">▲</span>
+      <span class="mi-label">JUMP</span>
+    </div>
+    <div id="mi-right" class="mi">
+      <span class="mi-icon">▶</span>
+      <span class="mi-label">RIGHT</span>
+    </div>
+  `;
+  indicators.style.cssText = 'position:fixed;bottom:20px;left:0;right:0;display:flex;justify-content:center;gap:16px;z-index:50;pointer-events:none;';
   document.body.appendChild(indicators);
   document.querySelectorAll('.mi').forEach(el => {
-    el.style.cssText = 'width:60px;height:60px;border-radius:50%;background:rgba(0,255,255,0.15);border:2px solid rgba(0,255,255,0.3);display:flex;align-items:center;justify-content:center;font-size:24px;color:rgba(0,255,255,0.5);';
+    el.style.cssText = 'width:70px;height:70px;border-radius:16px;background:rgba(0,255,255,0.1);border:2px solid rgba(0,255,255,0.2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;backdrop-filter:blur(4px);';
+    el.querySelector('.mi-icon').style.cssText = 'font-size:20px;color:rgba(0,255,255,0.6);';
+    el.querySelector('.mi-label').style.cssText = 'font-size:8px;font-weight:700;letter-spacing:1px;color:rgba(0,255,255,0.4);';
   });
 }
 
 function flashMobileIndicator(id) {
   const el = document.getElementById(id);
   if (!el) return;
-  el.style.background = 'rgba(0,255,255,0.4)';
+  el.style.background = 'rgba(0,255,255,0.3)';
   el.style.borderColor = 'rgba(0,255,255,0.8)';
+  el.style.transform = 'scale(0.95)';
+  if (navigator.vibrate) navigator.vibrate(10);
   setTimeout(() => {
-    el.style.background = 'rgba(0,255,255,0.15)';
-    el.style.borderColor = 'rgba(0,255,255,0.3)';
-  }, 150);
+    el.style.background = 'rgba(0,255,255,0.1)';
+    el.style.borderColor = 'rgba(0,255,255,0.2)';
+    el.style.transform = 'scale(1)';
+  }, 100);
+}
+
+function showGestureTutorial() {
+  if (!('ontouchstart' in window)) return;
+  if (localStorage.getItem('neonRunnerTutorialSeen')) return;
+  
+  const tutorial = document.createElement('div');
+  tutorial.id = 'gesture-tutorial';
+  tutorial.innerHTML = `
+    <div class="tutorial-content">
+      <h3>HOW TO PLAY</h3>
+      <div class="tutorial-gestures">
+        <div class="gesture">
+          <div class="gesture-icon">👈👉</div>
+          <div class="gesture-text">Swipe Left/Right to switch lanes</div>
+        </div>
+        <div class="gesture">
+          <div class="gesture-icon">👆</div>
+          <div class="gesture-text">Tap to jump</div>
+        </div>
+      </div>
+      <button id="tutorial-dismiss" class="btn small">GOT IT!</button>
+    </div>
+  `;
+  tutorial.style.cssText = 'position:fixed;inset:0;background:rgba(10,10,26,0.95);z-index:200;display:flex;align-items:center;justify-content:center;';
+  document.body.appendChild(tutorial);
+  
+  document.getElementById('tutorial-dismiss').addEventListener('click', () => {
+    tutorial.remove();
+    localStorage.setItem('neonRunnerTutorialSeen', '1');
+  });
 }
 
 function captureScreenshot() {
