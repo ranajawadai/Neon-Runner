@@ -844,12 +844,15 @@ function animate() {
     updateHUD();
 
     targetX = LANES[currentLane];
-    const laneSpring = 25;
-    const laneDamping = 0.85;
-    const laneForce = (targetX - player.position.x) * laneSpring;
-    laneVelocity += laneForce * dt;
-    laneVelocity *= laneDamping;
-    player.position.x += laneVelocity;
+    const laneDiff = targetX - player.position.x;
+    const laneAccel = laneDiff * 40;
+    laneVelocity += laneAccel * dt;
+    laneVelocity *= Math.pow(0.001, dt);
+    player.position.x += laneVelocity * dt;
+    if (Math.abs(laneDiff) < 0.01 && Math.abs(laneVelocity) < 0.1) {
+      player.position.x = targetX;
+      laneVelocity = 0;
+    }
 
     if (isJumping || player.position.y > GROUND_Y + 0.001) {
       velocityY += GRAVITY * dt;
