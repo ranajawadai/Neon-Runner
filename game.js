@@ -845,13 +845,11 @@ function animate() {
 
     targetX = LANES[currentLane];
     const laneDiff = targetX - player.position.x;
-    const laneAccel = laneDiff * 40;
-    laneVelocity += laneAccel * dt;
-    laneVelocity *= Math.pow(0.001, dt);
-    player.position.x += laneVelocity * dt;
-    if (Math.abs(laneDiff) < 0.01 && Math.abs(laneVelocity) < 0.1) {
+    const laneSpeed = 35;
+    if (Math.abs(laneDiff) > 0.005) {
+      player.position.x += Math.sign(laneDiff) * Math.min(Math.abs(laneDiff), laneSpeed * dt);
+    } else {
       player.position.x = targetX;
-      laneVelocity = 0;
     }
 
     if (isJumping || player.position.y > GROUND_Y + 0.001) {
