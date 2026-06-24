@@ -4,6 +4,8 @@ let audioCtx = null;
 let bgmOsc = null;
 let bgmGain = null;
 let sfxGain = null;
+let ambientOsc = null;
+let ambientGain = null;
 
 export function initAudio() {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -13,6 +15,9 @@ export function initAudio() {
   bgmGain = audioCtx.createGain();
   bgmGain.gain.value = 0.12;
   bgmGain.connect(audioCtx.destination);
+  ambientGain = audioCtx.createGain();
+  ambientGain.gain.value = 0.08;
+  ambientGain.connect(audioCtx.destination);
 }
 
 export function setMusicVolume(value) {
@@ -96,6 +101,61 @@ export function sfxThemeChange() {
   playTone(440, 0.15, 'sine', 0.25);
 }
 
+export function sfxHit() {
+  playTone(100, 0.15, 'sawtooth', 0.4);
+  playTone(80, 0.2, 'square', 0.2);
+}
+
+export function sfxCombo() {
+  playTone(660, 0.05, 'sine', 0.3);
+  playTone(880, 0.08, 'sine', 0.25);
+}
+
+export function startAmbient() {
+  if (!audioCtx || ambientOsc) return;
+  
+  // Wind noise using multiple detuned oscillators
+  ambientOsc = audioCtx.createOscillator();
+  ambientOsc.type = 'sawtooth';
+  ambientOsc.frequency.value = 80;
+  
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 200;
+  filter.Q.value = 1;
+  
+  const lfo = audioCtx.createOscillator();
+  lfo.type = 'sine';
+  lfo.frequency.value = 0.2;
+  const lfoGain = audioCtx.createGain();
+  lfoGain.gain.value = 50;
+  lfo.connect(lfoGain);
+  lfoGain.connect(filter.frequency);
+  lfo.start();
+  
+  ambientOsc.connect(filter);
+  filter.connect(ambientGain);
+  ambientOsc.start();
+  
+  ambientOsc._lfo = lfo;
+  ambientOsc._filter = filter;
+}
+
+export function stopAmbient() {
+  if (ambientOsc) {
+    ambientOsc._lfo.stop();
+    ambientOsc.stop();
+    ambientOsc = null;
+  }
+}
+
+export function updateAmbientIntensity(speedRatio) {
+  if (!ambientOsc) return;
+  const intensity = Math.min(1, (speedRatio - 1) / 2);
+  ambientOsc._filter.frequency.value = 200 + intensity * 300;
+  ambientGain.gain.value = 0.08 + intensity * 0.04;
+}
+
 export function startBGM() {
   if (!audioCtx || bgmOsc) return;
 
@@ -163,4 +223,5 @@ export function updateMusicIntensity(speedRatio) {
 
 export function resumeAudio() {
   if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  startAmbient();
 }

@@ -13,8 +13,8 @@ import {
 
 import { 
   initAudio, setMusicVolume, setSfxVolume, sfxCoin, sfxJump,
-  sfxDeath, sfxPowerup, sfxNearMiss, sfxThemeChange,
-  startBGM, stopBGM, updateMusicIntensity, resumeAudio 
+  sfxDeath, sfxPowerup, sfxNearMiss, sfxThemeChange, sfxHit, sfxCombo,
+  startBGM, stopBGM, updateMusicIntensity, resumeAudio, startAmbient, stopAmbient, updateAmbientIntensity 
 } from './audio.js';
 
 import { shuffle, getCurrentTier, getRandomObstacleType, getCharacterGeometry } from './utils.js';
@@ -607,10 +607,12 @@ function togglePause() {
   if (state.isPaused) {
     showScreen('pause-screen');
     stopBGM();
+    stopAmbient();
   } else {
     showScreen(null);
     document.getElementById('hud').classList.remove('hidden');
     startBGM();
+    startAmbient();
   }
 }
 
@@ -619,6 +621,7 @@ function quitToMenu() {
   state.gameOver = false;
   state.isPaused = false;
   stopBGM();
+  stopAmbient();
   obstacles.forEach(o => { o.visible = false; });
   obstacles = [];
   coins.forEach(c => { c.visible = false; });
@@ -695,6 +698,7 @@ function endGame() {
   setTimeout(() => spawnParticleBurst(player.position.x, player.position.y + 0.5, player.position.z - 0.3, 0x00ffff, 8, scene), 300);
 
   stopBGM();
+  stopAmbient();
   sfxDeath();
   updateScore(state.score);
   checkAchievements();
@@ -875,6 +879,7 @@ function animate() {
           coins.splice(i, 1);
           state.coins++;
           state.combo++;
+          if (state.combo >= 5) sfxCombo();
           state.multiplier = 1 + Math.floor(state.combo / 5) * 0.5;
           state.score += 10 * state.multiplier;
           updateHUD();
@@ -934,6 +939,7 @@ function animate() {
     updateSpeedLines(dt);
     updateParallax(dt);
     updateMusicIntensity(state.speed / state.baseSpeed);
+    updateAmbientIntensity(state.speed / state.baseSpeed);
 
     const distance = Math.floor(state.score / 10);
     if (distance >= lastMilestone + 500) {
