@@ -13,8 +13,12 @@ export function generateDailyChallenges() {
   const savedDate = localStorage.getItem('neonRunnerChallengeDate');
   
   if (savedDate === todayDate) {
-    dailyChallenges = JSON.parse(localStorage.getItem('neonRunnerChallenges') || '[]');
+    const saved = JSON.parse(localStorage.getItem('neonRunnerChallenges') || '[]');
     dailyChallengeProgress = JSON.parse(localStorage.getItem('neonRunnerChallengeProgress') || '{}');
+    dailyChallenges = saved.map(c => {
+      const original = DAILY_CHALLENGES.find(d => d.id === c.id);
+      return original ? { ...original } : c;
+    });
     return;
   }
   
