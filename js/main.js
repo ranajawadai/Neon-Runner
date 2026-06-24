@@ -96,8 +96,8 @@ function init() {
   setupBloom();
   clock = new THREE.Clock();
 
-  obstacleMat = new THREE.MeshStandardMaterial({ color: 0xff1463, emissive: 0xff1463, emissiveIntensity: 0.7, metalness: 0.3, roughness: 0.4 });
-  coinMat = new THREE.MeshStandardMaterial({ color: 0xffe14d, emissive: 0xffaa00, emissiveIntensity: 0.8, metalness: 0.7, roughness: 0.3 });
+  obstacleMat = new THREE.MeshStandardMaterial({ color: 0xff1463, emissive: 0xff1463, emissiveIntensity: 0.5, metalness: 0.3, roughness: 0.4 });
+  coinMat = new THREE.MeshStandardMaterial({ color: 0xffe14d, emissive: 0xffaa00, emissiveIntensity: 0.4, metalness: 0.6, roughness: 0.4 });
   playerMat = new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 0.8, metalness: 0.5, roughness: 0.25 });
 
   buildLights();
@@ -128,7 +128,7 @@ function setupBloom() {
 
   bloomPass = new THREE.UnrealBloomPass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
-    0.8, 0.4, 0.85
+    0.6, 0.3, 0.9
   );
   composer.addPass(bloomPass);
 }
@@ -616,6 +616,7 @@ function togglePause() {
   state.isPaused = !state.isPaused;
   if (state.isPaused) {
     showScreen('pause-screen');
+    document.getElementById('hud').classList.add('hidden');
     stopBGM();
     stopAmbient();
   } else {
@@ -722,7 +723,10 @@ function endGame() {
   document.getElementById('final-coins').textContent = state.runCoins || 0;
   document.getElementById('best-score').textContent = state.best;
   document.getElementById('final-daily').textContent = state.dailyBest;
-  document.getElementById('game-over-screen').classList.remove('hidden');
+  const gameOverScreen = document.getElementById('game-over-screen');
+  gameOverScreen.classList.remove('hidden');
+  gameOverScreen.classList.add('game-over-animate');
+  setTimeout(() => gameOverScreen.classList.remove('game-over-animate'), 1000);
 }
 
 function updateHUD() {
