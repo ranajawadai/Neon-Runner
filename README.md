@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🏃‍♂️ NEON RUNNER
+# NEON RUNNER
 
-### *Cyberpunk 3D Endless Runner — Built with Three.js*
+### *A Premium Cyberpunk 3D Endless Runner*
 
 **[PLAY NOW](https://ranajawadai.github.io/Neon-Runner/)** • **[REPORT BUG](https://github.com/ranajawadai/Neon-Runner/issues)** • **[CONTRIBUTE](#contributing)**
 
@@ -15,13 +15,27 @@
 
 <br>
 
-**A fast-paced, neon-drenched 3D endless runner** where you dodge obstacles, collect coins, and chase your high score through a cyberpunk cityscape.
+**A fast-paced, neon-drenched 3D endless runner** with bloom post-processing, procedural audio, and buttery-smooth 60fps gameplay. Zero external assets — everything is generated in real-time.
+
+[![Demo](https://img.shields.io/badge/WATCH-DEMO-red?style=for-the-badge&logo=youtube&logoColor=white)](https://ranajawadai.github.io/Neon-Runner/)
 
 </div>
 
 ---
 
-## 🎮 Gameplay
+## Why Neon Runner?
+
+> *"Most browser games feel like prototypes. This one feels like a product."*
+
+- **Bloom post-processing** — real neon glow, not just bright colors
+- **Procedural everything** — audio, particles, effects, all generated at runtime
+- **Buttery smooth** — 60fps with object pooling and optimized rendering
+- **Mobile-first** — swipe controls, responsive UI, PWA installable
+- **Zero dependencies** — just Three.js via CDN, no build step required
+
+---
+
+## Gameplay
 
 <div align="center">
 
@@ -33,98 +47,106 @@ DODGE ← → COLLECT COINS ← → SURVIVE ← → REPEAT
 
 | | |
 |---|---|
-| 🏃 **3-lane runner** | Switch lanes to dodge randomly generated obstacles |
-| 💰 **Coin collection** | Grab coins for score — consecutive picks build combo multiplier |
-| ⚡ **Power-ups** | Magnet pulls coins toward you, Shield absorbs one hit, Multiplier gives 3x score |
-| 🔥 **Combo system** | Chain coin pickups for increasing score multipliers |
-| 🎵 **Synth audio** | Procedural cyberpunk soundtrack — no external audio files needed |
-| 📱 **Mobile ready** | Swipe to switch lanes, tap to jump |
+| **3-lane runner** | Switch lanes with spring-damped movement — feels responsive, not robotic |
+| **Coin collection** | Grab coins for score — consecutive picks build combo multiplier |
+| **Power-ups** | Magnet pulls coins, Shield absorbs hits, Multiplier gives 3x score |
+| **Near-miss bonus** | Dodge obstacles narrowly for +50 score and visual feedback |
+| **Combo system** | Chain pickups for increasing multipliers with HUD pulse animation |
+| **Procedural audio** | Multi-oscillator synth soundtrack that evolves with speed |
 
 ---
 
-## ✨ Features
+## Features
 
 <details>
-<summary><b>🚀 Core Gameplay</b></summary>
+<summary><b>Core Gameplay</b></summary>
 
 - 3 obstacle types: cubes, pyramids, walls
+- Moving obstacles that shift lanes
 - Jump physics with gravity
-- Dynamic speed ramp (1x → 3x)
+- Dynamic speed ramp (1x to 3x)
 - Combo multiplier (up to 3x+)
 - High score saved to localStorage
+- Daily best tracking
+- Achievement system (8 achievements)
 
 </details>
 
 <details>
-<summary><b>🎨 Visual Effects</b></summary>
+<summary><b>Visual Effects</b></summary>
 
-- Coin pickup particle bursts
-- Death screen shake + particles
-- Player trail (cyan glow line)
-- Speed lines at high velocity
-- Neon cyberpunk color palette
+- **Bloom post-processing** — UnrealBloomPass for authentic neon glow
+- **Enhanced particles** — circular bursts with size scaling on fade
+- **Near-miss feedback** — cyan border flash + audio ping
+- **Score fly-ups** — floating "+10" text on coin collect
+- **Death animation** — player spins, fades, and falls
+- **Player trail** — cyan glow line
+- **Speed lines** — appear above 1.3x speed
+- **Screen transitions** — smooth fade-to-black between views
+- **Button animations** — ripple effects, hover transforms, shimmer loading bar
 
 </details>
 
 <details>
-<summary><b>🔊 Audio</b></summary>
+<summary><b>Audio</b></summary>
 
-- Procedural synth soundtrack (Web Audio API)
+- **Multi-oscillator BGM** — sawtooth bass, sine sub bass, square arpeggio
+- **Speed-reactive music** — intensity increases with player speed
 - Coin pickup chime
 - Jump whoosh
-- Death buzz
+- Death explosion
 - Power-up arpeggio
+- Near-miss ping
 - Volume controls in settings
 
 </details>
 
 <details>
-<summary><b>⚡ Power-ups</b></summary>
+<summary><b>Power-ups</b></summary>
 
 | Power-up | Color | Duration | Effect |
 |----------|-------|----------|--------|
-| **Magnet** | 🟣 Pink | 8s | Attracts nearby coins |
-| **Shield** | 🟢 Green | 10s | Absorbs one hit |
-| **Multiplier** | 🟡 Gold | Instant | 3x score |
+| **Magnet** | Pink | 8s | Attracts nearby coins with visual indicator |
+| **Shield** | Green | 10s | Absorbs one hit with visual indicator |
+| **Multiplier** | Gold | Instant | 3x score |
 
 </details>
 
 <details>
-<summary><b>🎯 UI/UX</b></summary>
+<summary><b>UI/UX</b></summary>
 
-- Animated loading screen
+- Animated loading screen with shimmer effect
 - Pause menu (ESC)
 - Settings panel (volume, sensitivity)
-- PWA support — installable
-- Responsive design
+- Combo counter with pulse animation
+- Power-up indicators with countdown timers
+- PWA support — installable on mobile/desktop
+- Responsive design with mobile-specific scaling
+- Accessibility: ARIA labels, reduced-motion support, high contrast mode
 
 </details>
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
-### Option 1: GitHub Pages (Recommended)
+### Play Instantly
 
-**[Click here to play instantly →](https://ranajawadai.github.io/Neon-Runner/)**
+**[Click here to play →](https://ranajawadai.github.io/Neon-Runner/)**
 
 No installation needed. Works in any modern browser.
 
-### Option 2: Local Development
+### Local Development
 
 ```bash
 # Clone the repo
 git clone https://github.com/ranajawadai/Neon-Runner.git
 cd Neon-Runner
 
-# Start a local server (Python)
-python -m http.server 8080
-
-# Or with Node.js
-npx serve .
-
-# Or with PHP
-php -S localhost:8080
+# Start a local server (pick one)
+python -m http.server 8080    # Python
+npx serve .                   # Node.js
+php -S localhost:8080         # PHP
 
 # Open in browser
 open http://localhost:8080
@@ -134,72 +156,118 @@ open http://localhost:8080
 
 ---
 
-## 🎮 Controls
+## Controls
 
 | Input | Action |
 |-------|--------|
 | `←` `→` / `A` `D` | Switch lanes |
 | `Space` / `↑` / `W` | Jump |
 | `ESC` | Pause |
-| 📱 Swipe left/right | Switch lanes |
-| 📱 Tap | Jump |
+| Swipe left/right | Switch lanes (mobile) |
+| Tap | Jump (mobile) |
 
 ---
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 ```
-├── Three.js          — 3D rendering engine
-├── Web Audio API     — Procedural sound synthesis
-├── CSS3              — Neon cyberpunk UI theme
-├── HTML5             — Semantic markup
-└── Vanilla JS        — Zero dependencies (beyond Three.js)
+├── Three.js r128      — 3D rendering + bloom post-processing
+├── Web Audio API      — Multi-oscillator procedural soundtrack
+├── CSS3               — Neon cyberpunk theme + animations
+├── HTML5              — Semantic markup + ARIA accessibility
+└── Vanilla JS         — Zero build step, zero dependencies
 ```
 
-**Total code:** ~800 lines • **Bundle size:** ~0KB (CDN) • **Load time:** <1s
+| Metric | Value |
+|--------|-------|
+| Lines of code | ~1,500 |
+| External dependencies | 1 (Three.js via CDN) |
+| Audio files | 0 (all procedural) |
+| Bundle size | ~0KB (CDN-loaded) |
+| Load time | <1s |
+| Frame rate | 60fps |
+| Platforms | Desktop, Mobile, Tablet |
+| Browsers | Chrome, Firefox, Safari, Edge |
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Neon-Runner/
-├── index.html        — Entry point + UI screens
-├── game.js           — Game logic, rendering, physics, audio
-├── style.css         — Cyberpunk neon theme
+├── index.html        — Entry point + UI screens + ARIA labels
+├── game.js           — Game logic, rendering, physics, audio, effects
+├── style.css         — Cyberpunk theme + animations + mobile scaling
 ├── manifest.json     — PWA manifest
 └── README.md         — This file
 ```
 
 ---
 
-## 🎯 Game Architecture
+## Architecture
 
 ```
-┌─────────────────────────────────────┐
-│           THREE.js Renderer          │
-├─────────────────────────────────────┤
-│  Scene → Camera → Lights → Objects   │
-├─────────────────────────────────────┤
-│          Game Loop (60fps)           │
-│  ┌───────────┬──────────┬────────┐  │
-│  │  Physics  │  Spawn   │ Collide│  │
-│  │  (gravity)│ (obs/coin│ (3-axis│  │
-│  │           │ /powerup)│  check)│  │
-│  └───────────┴──────────┴────────┘  │
-├─────────────────────────────────────┤
-│  Systems: Particles, Shake, Trail,  │
-│  Speed Lines, Magnet, Shield, Combo │
-├─────────────────────────────────────┤
-│  Audio: Web Audio API (procedural)  │
-│  UI: DOM overlays (loading/pause/   │
-│      settings/game over)            │
-└─────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│         THREE.js + Bloom Post-Processing │
+├─────────────────────────────────────────┤
+│  Scene → Camera → Lights → Bloom Pass   │
+├─────────────────────────────────────────┤
+│           Game Loop (60fps)              │
+│  ┌───────────┬───────────┬───────────┐  │
+│  │  Physics  │   Spawn   │  Collide  │  │
+│  │ (gravity, │ (obs/coin │ (3-axis   │  │
+│  │  easing)  │ /powerup) │  check)   │  │
+│  └───────────┴───────────┴───────────┘  │
+├─────────────────────────────────────────┤
+│  Systems: Particles (pooled), Shake,    │
+│  Trail, Speed Lines, Magnet, Shield,    │
+│  Combo, Near-Miss, Death Animation      │
+├─────────────────────────────────────────┤
+│  Audio: Multi-oscillator synth          │
+│  (bass + sub + arpeggio + LFO)          │
+├─────────────────────────────────────────┤
+│  UI: DOM overlays with transitions,     │
+│  ARIA labels, mobile scaling            │
+└─────────────────────────────────────────┘
 ```
 
 ---
 
-## 🤝 Contributing
+## What's New (v2.0)
+
+### Visual Overhaul
+- Bloom post-processing for authentic neon glow
+- Enhanced particle system with circular bursts
+- Score fly-ups on coin collect
+- Near-miss feedback (cyan flash + audio ping)
+- Power-up visual indicators with timers
+- Screen transitions between views
+
+### Game Feel
+- Spring-damped lane switching (responsive, no shake)
+- Death animation (spin, fade, fall)
+- Combo counter with pulse animation
+- Button ripple effects and hover transforms
+
+### Audio
+- Multi-oscillator BGM (bass + sub + arpeggio)
+- Speed-reactive music intensity
+- Near-miss audio feedback
+
+### Performance
+- Object pooling for obstacles, coins, particles, power-ups
+- Memory leak fixes (material disposal)
+- Frame-rate independent physics
+
+### Accessibility
+- ARIA labels on all interactive elements
+- Reduced-motion media query support
+- High-contrast mode support
+- Mobile-specific UI scaling
+
+---
+
+## Contributing
 
 Contributions welcome! Here's how:
 
@@ -211,49 +279,39 @@ Contributions welcome! Here's how:
 
 ### Ideas for contributions:
 
-- 🗺️ New obstacle types (moving obstacles, lasers)
-- 💎 New power-ups (score magnet, slow-mo, double jump)
-- 🎵 More audio effects
-- 🏆 Global leaderboard
-- 🌍 Multiple themes (retro, space, underwater)
-- 📊 Stats tracking
+- New obstacle types (lasers, rotating barriers)
+- New power-ups (slow-mo, double jump, score multiplier)
+- Global leaderboard
+- Daily challenges
+- Multiple environments (retro, space, underwater)
+- Stats tracking and analytics
+- Sound effect improvements
 
 ---
 
-## 📋 Roadmap
+## Roadmap
 
 - [x] Core 3-lane runner
-- [x] 3 obstacle types
+- [x] 3 obstacle types + moving obstacles
 - [x] Coin system + combo multiplier
 - [x] Power-ups (Magnet, Shield, Multiplier)
-- [x] Particle effects + screen shake
-- [x] Player trail + speed lines
-- [x] Procedural audio (Web Audio API)
-- [x] Pause menu + settings
-- [x] Loading screen
-- [x] PWA support
-- [ ] Moving obstacles
-- [ ] Multiple themes
+- [x] Bloom post-processing
+- [x] Enhanced particle system
+- [x] Near-miss feedback
+- [x] Score fly-ups
+- [x] Screen transitions
+- [x] Multi-oscillator BGM
+- [x] Object pooling (performance)
+- [x] Mobile scaling + accessibility
+- [x] Achievement system
 - [ ] Global leaderboard
-- [ ] Achievement system
 - [ ] Daily challenges
+- [ ] Multiple environments
+- [ ] Stats tracking
 
 ---
 
-## 📊 Stats
-
-| Metric | Value |
-|--------|-------|
-| Lines of code | ~800 |
-| External dependencies | 1 (Three.js) |
-| Audio files | 0 (all procedural) |
-| Load time | <1s |
-| Works on | Desktop, Mobile, Tablet |
-| Browser support | Chrome, Firefox, Safari, Edge |
-
----
-
-## 📜 License
+## License
 
 MIT License — use it however you want.
 
@@ -285,9 +343,9 @@ SOFTWARE.
 
 <div align="center">
 
-**Made with 💜 and Three.js**
+**Made with Three.js and a lot of neon**
 
-⭐ Star this repo if you enjoyed the game!
+Star this repo if you enjoyed the game!
 
 [![GitHub followers](https://img.shields.io/github/followers/ranajawadai?style=social)](https://github.com/ranajawadai)
 
