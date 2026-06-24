@@ -68,6 +68,7 @@ const state = {
 };
 let lastCombo = 0;
 let laneVelocity = 0;
+let showScreenTimeout = null;
 
 // death animation
 let deathAnimTime = 0;
@@ -1261,14 +1262,16 @@ function renderAchievements() {
 }
 
 function showScreen(id) {
+  if (showScreenTimeout) clearTimeout(showScreenTimeout);
   const transition = document.getElementById('screen-transition');
   transition.classList.add('active');
-  setTimeout(() => {
+  showScreenTimeout = setTimeout(() => {
     ['loading-screen', 'start-screen', 'pause-screen', 'settings-screen', 'game-over-screen', 'achievements-screen'].forEach(s => {
       document.getElementById(s).classList.add('hidden');
     });
     if (id) document.getElementById(id).classList.remove('hidden');
     transition.classList.remove('active');
+    showScreenTimeout = null;
   }, 250);
 }
 
