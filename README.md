@@ -196,11 +196,25 @@ open http://localhost:8080
 ```
 Neon-Runner/
 ├── index.html        — Entry point + UI screens + ARIA labels
-├── game.js           — Game logic, rendering, physics, audio, effects
 ├── style.css         — Cyberpunk theme + animations + mobile scaling
 ├── manifest.json     — PWA manifest
+├── js/
+│   ├── main.js       — Entry point: init, render loop, input, UI wiring
+│   ├── config.js     — Constants: lanes, themes, characters, tiers, physics
+│   ├── state.js       — Game state + localStorage persistence
+│   ├── audio.js       — Procedural BGM/SFX/ambient (Web Audio API)
+│   ├── difficulty.js  — Tier lookup + tier-change UI/audio
+│   ├── particles.js   — Particle bursts + weather effects
+│   ├── utils.js       — Shuffle, seeded RNG, tier/obstacle helpers
+│   └── challenges.js  — Daily challenge generation + tracking
+├── tests/             — Vitest unit tests (state, utils, difficulty)
+├── archive/           — Pre-refactor legacy code, not loaded by the game
 └── README.md         — This file
 ```
+
+> `index.html` loads `js/main.js` as an ES module. All gameplay code lives
+> under `js/`. The `archive/` folder contains an old, unused single-file
+> version kept for reference only.
 
 ---
 

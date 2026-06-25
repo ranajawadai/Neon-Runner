@@ -56,6 +56,9 @@ let shakeIntensity = 0;
 let shakeDuration = 0;
 let fpsFrames = 0;
 let fpsTime = 0;
+let lowFpsStreak = 0;
+let highFpsStreak = 0;
+let bloomEnabled = true;
 
 let bgLayers = [];
 let flashOverlay = null;
@@ -117,8 +120,6 @@ function init() {
   showGestureTutorial();
 
   animate();
-  simulateLoading();
-  createMobileIndicators();
 }
 
 function setupBloom() {
@@ -652,10 +653,8 @@ function quitToMenu() {
 }
 
 function startGame() {
+  resetGameState();
   state.running = true;
-  state.gameOver = false;
-  state.speed = state.baseSpeed;
-  state.score = 0;
   incrementGamesPlayed();
   updateStreak();
   lastMilestone = 0;
@@ -683,10 +682,6 @@ function startGame() {
   speedLines.forEach(l => { l.visible = false; l.material.opacity = 0; });
   powerups.forEach(p => { p.visible = false; });
   powerups = [];
-  state.combo = 0;
-  state.multiplier = 1;
-  state.shield = false;
-  state.magnet = false;
 
   document.getElementById('start-screen').classList.add('hidden');
   document.getElementById('game-over-screen').classList.add('hidden');
@@ -774,7 +769,7 @@ function animate() {
     const tier = getCurrentTier(state.score, DIFFICULTY_TIERS);
     showTierChange(tier);
     if (state.speed < tier.speed) {
-      state.speed = Math.min(tier.speed, state.speed + 2 * dt);
+      state.speed = Math.min(tier.speed, state.speed + 0.6 * dt);
     }
     
     const streakMultiplier = 1 + Math.min(state.streak * 0.1, 0.5);
@@ -843,7 +838,10 @@ function animate() {
         o.userData.shifted = true;
       }
 
-      if (Math.abs(o.position.x - px) < 0.85 && Math.abs(oz - pz) < 1.0 && Math.abs(o.position.y - py) < 0.95) {
+      const hitbox = OBSTACLE_TYPES[o.userData.type] ? OBSTACLE_TYPES[o.userData.type].hitbox : { x: 0.7, y: 0.7, z: 0.7 };
+      const hitDx = Math.abs(o.position.x - px);
+      const hitDz = Math.abs(oz - pz);
+      if (hitDx < hitbox.x && hitDz < hitbox.z && Math.abs(o.position.y - py) < hitbox.y) {
         if (state.shield) {
           state.shield = false;
           state.shieldTimer = 0;
@@ -854,6 +852,14 @@ function animate() {
         }
         endGame();
         return;
+      }
+      if (!o.userData.nearMissed && hitDx < 1.2 && hitDz < 1.5 && hitDx > 0.7) {
+        o.userData.nearMissed = true;
+        sfxNearMiss();
+        const overlay = document.getElementById('near-miss-overlay');
+        overlay.classList.add('active');
+        setTimeout(() => overlay.classList.remove('active'), 100);
+        state.score += 50;
       }
       if (oz > DESPAWN_Z) {
         o.visible = false;
@@ -960,19 +966,6 @@ function animate() {
       showMilestone(lastMilestone);
       sfxCoin();
     }
-
-    obstacles.forEach(o => {
-      const dx = Math.abs(o.position.x - px);
-      const dz2 = Math.abs(o.position.z - pz);
-      if (dx < 1.2 && dz2 < 1.5 && dx > 0.7 && !o.userData.nearMissed) {
-        o.userData.nearMissed = true;
-        sfxNearMiss();
-        const overlay = document.getElementById('near-miss-overlay');
-        overlay.classList.add('active');
-        setTimeout(() => overlay.classList.remove('active'), 100);
-        state.score += 50;
-      }
-    });
   } else {
     if (state.gameOver && deathAnimTime < DEATH_ANIM_DURATION) {
       deathAnimTime += dt;
@@ -1002,6 +995,25 @@ function animate() {
     if (fpsEl) fpsEl.textContent = fpsDisplay + ' FPS';
     fpsFrames = 0;
     fpsTime = 0;
+
+    if (fpsDisplay < 30) {
+      lowFpsStreak++;
+      highFpsStreak = 0;
+    } else if (fpsDisplay >= 45) {
+      highFpsStreak++;
+      lowFpsStreak = 0;
+    } else {
+      lowFpsStreak = 0;
+      highFpsStreak = 0;
+    }
+
+    if (bloomEnabled && lowFpsStreak >= 3) {
+      bloomEnabled = false;
+      bloomPass.enabled = false;
+    } else if (!bloomEnabled && highFpsStreak >= 3) {
+      bloomEnabled = true;
+      bloomPass.enabled = true;
+    }
   }
 
   composer.render();
@@ -1094,7 +1106,7 @@ function setupUI() {
     btn.addEventListener('click', () => {
       if (state.best < char.unlock) return;
       state.character = i;
-      localStorage.setItem('neonRunnerChar', i);
+      try { localStorage.setItem('neonRunnerChar', i); } catch (e) {}
       charSel.querySelectorAll('.selector-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       rebuildPlayer();
@@ -1113,7 +1125,7 @@ function setupUI() {
     btn.addEventListener('click', () => {
       if (state.best < t.unlock) return;
       state.theme = key;
-      localStorage.setItem('neonRunnerTheme', key);
+      try { localStorage.setItem('neonRunnerTheme', key); } catch (e) {}
       themeSel.querySelectorAll('.selector-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       applyTheme(key);
@@ -1196,7 +1208,9 @@ function flashMobileIndicator(id) {
 
 function showGestureTutorial() {
   if (!('ontouchstart' in window)) return;
-  if (localStorage.getItem('neonRunnerTutorialSeen')) return;
+  let alreadySeen = false;
+  try { alreadySeen = !!localStorage.getItem('neonRunnerTutorialSeen'); } catch (e) {}
+  if (alreadySeen) return;
   
   const tutorial = document.createElement('div');
   tutorial.id = 'gesture-tutorial';
@@ -1221,7 +1235,7 @@ function showGestureTutorial() {
   
   document.getElementById('tutorial-dismiss').addEventListener('click', () => {
     tutorial.remove();
-    localStorage.setItem('neonRunnerTutorialSeen', '1');
+    try { localStorage.setItem('neonRunnerTutorialSeen', '1'); } catch (e) {}
   });
 }
 
@@ -1247,11 +1261,15 @@ function showShareButton() {
 }
 
 function loadAnalytics() {
-  return JSON.parse(localStorage.getItem('neonRunnerAnalytics') || '{"totalScore":0,"totalGames":0,"totalCoins":0,"bestDistance":0,"deathLanes":[0,0,0]}');
+  try {
+    return JSON.parse(localStorage.getItem('neonRunnerAnalytics') || '{"totalScore":0,"totalGames":0,"totalCoins":0,"bestDistance":0,"deathLanes":[0,0,0]}');
+  } catch (e) {
+    return { totalScore: 0, totalGames: 0, totalCoins: 0, bestDistance: 0, deathLanes: [0, 0, 0] };
+  }
 }
 
 function saveAnalytics(data) {
-  localStorage.setItem('neonRunnerAnalytics', JSON.stringify(data));
+  try { localStorage.setItem('neonRunnerAnalytics', JSON.stringify(data)); } catch (e) {}
 }
 
 function updateAnalytics() {
@@ -1274,5 +1292,32 @@ function getAnalyticsHTML() {
   return '<div class="stats-panel"><div class="stat-row"><span>Avg Score</span><span>' + avg + '</span></div><div class="stat-row"><span>Total Games</span><span>' + a.totalGames + '</span></div><div class="stat-row"><span>Total Coins</span><span>' + a.totalCoins + '</span></div><div class="stat-row"><span>Best Distance</span><span>' + a.bestDistance + 'm</span></div><div class="stat-row"><span>Death Lane</span><span>' + laneNames[favLane] + '</span></div></div>';
 }
 
-// Start the game
-init();
+// Start the game — guard against missing CDN dependencies instead of crashing silently
+function showFatalLoadError() {
+  const bar = document.getElementById('loading-bar');
+  const text = document.getElementById('loading-text');
+  const err = document.getElementById('load-error');
+  if (bar) bar.style.width = '0%';
+  if (text) text.textContent = 'Load failed.';
+  if (err) err.classList.remove('hidden');
+}
+
+function requiredGlobalsPresent() {
+  return typeof THREE !== 'undefined' &&
+    typeof THREE.EffectComposer !== 'undefined' &&
+    typeof THREE.RenderPass !== 'undefined' &&
+    typeof THREE.UnrealBloomPass !== 'undefined';
+}
+
+if (window.__assetLoadFailed || !requiredGlobalsPresent()) {
+  showFatalLoadError();
+} else {
+  try {
+    init();
+    simulateLoading();
+    createMobileIndicators();
+  } catch (e) {
+    console.error('Neon Runner failed to start:', e);
+    showFatalLoadError();
+  }
+}

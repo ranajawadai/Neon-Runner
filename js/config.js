@@ -9,12 +9,12 @@ export const POWERUP_TYPES = [
 ];
 
 export const OBSTACLE_TYPES = {
-  cube: { geo: 0, color: 0xff1463, behavior: 'static' },
-  pyramid: { geo: 1, color: 0xff1463, behavior: 'static' },
-  wall: { geo: 2, color: 0xff1463, behavior: 'static' },
-  laser: { geo: 3, color: 0xff0044, behavior: 'pulsing', pulseSpeed: 2 },
-  spinner: { geo: 4, color: 0xffaa00, behavior: 'spinning', spinSpeed: 5 },
-  slider: { geo: 5, color: 0xff6600, behavior: 'sliding', slideSpeed: 3 }
+  cube: { geo: 0, color: 0xff1463, behavior: 'static', hitbox: { x: 0.7, y: 0.7, z: 0.7 } },
+  pyramid: { geo: 1, color: 0xff1463, behavior: 'static', hitbox: { x: 0.5, y: 0.75, z: 0.5 } },
+  wall: { geo: 2, color: 0xff1463, behavior: 'static', hitbox: { x: 1.1, y: 0.5, z: 0.5 } },
+  laser: { geo: 3, color: 0xff0044, behavior: 'pulsing', pulseSpeed: 2, hitbox: { x: 1.6, y: 0.25, z: 0.25 } },
+  spinner: { geo: 4, color: 0xffaa00, behavior: 'spinning', spinSpeed: 5, hitbox: { x: 0.65, y: 0.65, z: 0.65 } },
+  slider: { geo: 5, color: 0xff6600, behavior: 'sliding', slideSpeed: 3, hitbox: { x: 0.95, y: 0.95, z: 0.3 } }
 };
 
 export const THEMES = {

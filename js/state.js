@@ -1,5 +1,22 @@
 // Game State Management
 
+function safeGet(key, fallback) {
+  try {
+    const v = localStorage.getItem(key);
+    return v === null ? fallback : v;
+  } catch (e) {
+    return fallback;
+  }
+}
+
+function safeSet(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch (e) {
+    // localStorage unavailable (e.g. private browsing) - state will not persist this session
+  }
+}
+
 function getTodayDate() {
   return new Date().toDateString();
 }
@@ -12,37 +29,37 @@ export const state = {
   baseSpeed: 20,
   maxSpeed: 42,
   score: 0,
-  coins: Number(localStorage.getItem('neonRunnerCoins') || '0'),
+  coins: Number(safeGet('neonRunnerCoins', '0')),
   runCoins: 0,
-  best: Number(localStorage.getItem('neonRunnerBest') || 0),
+  best: Number(safeGet('neonRunnerBest', 0)),
   combo: 0,
   multiplier: 1,
   shield: false,
   magnet: false,
   magnetTimer: 0,
   shieldTimer: 0,
-  theme: localStorage.getItem('neonRunnerTheme') || 'neon',
-  character: Number(localStorage.getItem('neonRunnerChar') || '0'),
-  gamesPlayed: Number(localStorage.getItem('neonRunnerGames') || '0'),
-  gamesPlayedToday: Number(localStorage.getItem('neonRunnerGames_' + getTodayDate()) || '0'),
-  unlockedAchievements: JSON.parse(localStorage.getItem('neonRunnerAchievements') || '[]'),
-  dailyBest: Number(localStorage.getItem('neonRunnerDaily_' + getTodayDate()) || '0'),
-  streak: Number(localStorage.getItem('neonRunnerStreak') || '0'),
-  lastPlayDate: localStorage.getItem('neonRunnerLastPlay') || ''
+  theme: safeGet('neonRunnerTheme', 'neon'),
+  character: Number(safeGet('neonRunnerChar', '0')),
+  gamesPlayed: Number(safeGet('neonRunnerGames', '0')),
+  gamesPlayedToday: Number(safeGet('neonRunnerGames_' + getTodayDate(), '0')),
+  unlockedAchievements: JSON.parse(safeGet('neonRunnerAchievements', '[]')),
+  dailyBest: Number(safeGet('neonRunnerDaily_' + getTodayDate(), '0')),
+  streak: Number(safeGet('neonRunnerStreak', '0')),
+  lastPlayDate: safeGet('neonRunnerLastPlay', '')
 };
 
 export function saveState() {
   const todayDate = getTodayDate();
-  localStorage.setItem('neonRunnerCoins', state.coins);
-  localStorage.setItem('neonRunnerBest', state.best);
-  localStorage.setItem('neonRunnerGames', state.gamesPlayed);
-  localStorage.setItem('neonRunnerGames_' + todayDate, state.gamesPlayedToday);
-  localStorage.setItem('neonRunnerTheme', state.theme);
-  localStorage.setItem('neonRunnerChar', state.character);
-  localStorage.setItem('neonRunnerAchievements', JSON.stringify(state.unlockedAchievements));
-  localStorage.setItem('neonRunnerDaily_' + todayDate, state.dailyBest);
-  localStorage.setItem('neonRunnerStreak', state.streak);
-  localStorage.setItem('neonRunnerLastPlay', state.lastPlayDate);
+  safeSet('neonRunnerCoins', state.coins);
+  safeSet('neonRunnerBest', state.best);
+  safeSet('neonRunnerGames', state.gamesPlayed);
+  safeSet('neonRunnerGames_' + todayDate, state.gamesPlayedToday);
+  safeSet('neonRunnerTheme', state.theme);
+  safeSet('neonRunnerChar', state.character);
+  safeSet('neonRunnerAchievements', JSON.stringify(state.unlockedAchievements));
+  safeSet('neonRunnerDaily_' + todayDate, state.dailyBest);
+  safeSet('neonRunnerStreak', state.streak);
+  safeSet('neonRunnerLastPlay', state.lastPlayDate);
 }
 
 export function resetGameState() {
