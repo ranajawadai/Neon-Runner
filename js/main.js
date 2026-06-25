@@ -726,7 +726,7 @@ function endGame() {
 
 function updateHUD() {
   document.getElementById('score').textContent = Math.floor(state.score);
-  document.getElementById('coins').textContent = state.coins;
+  document.getElementById('coins').textContent = state.runCoins;
   const speedStr = (state.speed / state.baseSpeed).toFixed(1) + 'x';
   document.getElementById('speed').textContent = speedStr;
 
