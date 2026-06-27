@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { getCurrentTier, getTierName, getTierColor, resetTierIdx } from '../js/difficulty.js';
+import { getTierName, getTierColor, resetTierIdx } from '../js/difficulty.js';
+import { getCurrentTier } from '../js/utils.js';
 import { DIFFICULTY_TIERS } from '../js/config.js';
 import { state } from '../js/state.js';
 
@@ -11,19 +12,17 @@ describe('Difficulty', () => {
 
   describe('getCurrentTier', () => {
     it('should return first tier for score 0', () => {
-      const tier = getCurrentTier();
+      const tier = getCurrentTier(0, DIFFICULTY_TIERS);
       expect(tier).toBe(DIFFICULTY_TIERS[0]);
     });
 
     it('should return second tier for score 1500', () => {
-      state.score = 1500;
-      const tier = getCurrentTier();
+      const tier = getCurrentTier(1500, DIFFICULTY_TIERS);
       expect(tier).toBe(DIFFICULTY_TIERS[1]);
     });
 
     it('should return last tier for high score', () => {
-      state.score = 50000;
-      const tier = getCurrentTier();
+      const tier = getCurrentTier(50000, DIFFICULTY_TIERS);
       expect(tier).toBe(DIFFICULTY_TIERS[DIFFICULTY_TIERS.length - 1]);
     });
   });
@@ -39,12 +38,12 @@ describe('Difficulty', () => {
   });
 
   describe('getTierColor', () => {
-    it('should return cyan for first tier', () => {
-      expect(getTierColor(DIFFICULTY_TIERS[0])).toBe('#00ffff');
+    it('should return bio-cyan for first tier', () => {
+      expect(getTierColor(DIFFICULTY_TIERS[0])).toBe('#2dd4bf');
     });
 
-    it('should return red for last tier', () => {
-      expect(getTierColor(DIFFICULTY_TIERS[DIFFICULTY_TIERS.length - 1])).toBe('#ff0044');
+    it('should return magenta for last tier', () => {
+      expect(getTierColor(DIFFICULTY_TIERS[DIFFICULTY_TIERS.length - 1])).toBe('#d946a8');
     });
   });
 });

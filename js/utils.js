@@ -1,5 +1,9 @@
 // Utility Functions
 
+/**
+ * Fisher-Yates shuffle. Mutates the array in place and returns it.
+ * Pass [...arr] if you need to preserve the original.
+ */
 export function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -8,12 +12,8 @@ export function shuffle(arr) {
   return arr;
 }
 
-export function seededRandom(seed) {
-  let s = seed;
-  return function() {
-    s = (s * 16807) % 2147483647;
-    return (s - 1) / 2147483646;
-  };
+export function getTodayDate() {
+  return new Date().toDateString();
 }
 
 export function getDailySeed() {
@@ -21,8 +21,12 @@ export function getDailySeed() {
   return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
 }
 
-export function getTodayDate() {
-  return new Date().toDateString();
+export function seededRandom(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
 }
 
 export function getCurrentTier(score, tiers) {

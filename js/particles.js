@@ -23,15 +23,16 @@ export function spawnParticleBurst(x, y, z, color, count, scene) {
       p = new THREE.Mesh(geo, mat);
       scene.add(p);
     }
-    const size = 0.8 + Math.random() * 1.2;
+    const size = 0.6 + Math.random() * 0.7;
     p.scale.set(size, size, size);
     p.position.set(x, y, z);
     const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
-    const speed = 3 + Math.random() * 4;
+    const speed = 1.2 + Math.random() * 1.6;
     p.userData.vx = Math.cos(angle) * speed;
-    p.userData.vy = Math.random() * 5 + 2;
+    p.userData.vy = Math.random() * 1.2 + 0.6;
     p.userData.vz = Math.sin(angle) * speed;
-    p.userData.life = 0.5 + Math.random() * 0.3;
+    p.userData.wobblePhase = Math.random() * Math.PI * 2;
+    p.userData.life = 0.7 + Math.random() * 0.4;
     p.userData.maxLife = p.userData.life;
     p.visible = true;
     particles.push(p);
@@ -40,16 +41,16 @@ export function spawnParticleBurst(x, y, z, color, count, scene) {
 
 export function initWeather(scene) {
   for (let i = 0; i < MAX_WEATHER; i++) {
-    const geo = new THREE.SphereGeometry(0.03, 4, 4);
-    const mat = new THREE.MeshBasicMaterial({ color: 0x88aaff, transparent: true, opacity: 0.4 });
+    const geo = new THREE.SphereGeometry(0.025, 4, 4);
+    const mat = new THREE.MeshBasicMaterial({ color: 0x6fd9cb, transparent: true, opacity: 0.45 });
     const p = new THREE.Mesh(geo, mat);
     p.position.set(
       (Math.random() - 0.5) * 20,
       Math.random() * 8 + 1,
       (Math.random() - 0.5) * 40 - 20
     );
-    p.userData.vy = -0.5 - Math.random() * 0.5;
-    p.userData.vx = (Math.random() - 0.5) * 0.2;
+    p.userData.vy = -0.15 - Math.random() * 0.2;
+    p.userData.vx = (Math.random() - 0.5) * 0.3;
     p.visible = true;
     scene.add(p);
     weatherParticles.push(p);
@@ -74,21 +75,30 @@ export function updateWeather(dt, speed) {
 }
 
 export function updateParticles(dt) {
-  for (let i = particles.length - 1; i >= 0; i--) {
+  // Swap-and-pop removal — O(1) per removal instead of O(n) with splice
+  let i = 0;
+  while (i < particles.length) {
     const p = particles[i];
-    p.position.x += p.userData.vx * dt;
+    p.userData.wobblePhase += dt * 3;
+    p.position.x += (p.userData.vx + Math.sin(p.userData.wobblePhase) * 0.3) * dt;
     p.position.y += p.userData.vy * dt;
     p.position.z += p.userData.vz * dt;
-    p.userData.vy -= 25 * dt;
+    p.userData.vx *= 0.96;
+    p.userData.vz *= 0.96;
+    p.userData.vy = Math.min(p.userData.vy + 1.5 * dt, 1.0);
     p.userData.life -= dt;
     const lifeRatio = Math.max(0, p.userData.life / p.userData.maxLife);
-    p.material.opacity = lifeRatio;
+    p.material.opacity = lifeRatio * 0.85;
     const s = 0.5 + lifeRatio * 0.5;
     p.scale.set(s, s, s);
     if (p.userData.life <= 0) {
       p.visible = false;
       particlePool.push(p);
-      particles.splice(i, 1);
+      // Swap with last element and pop — O(1)
+      particles[i] = particles[particles.length - 1];
+      particles.pop();
+    } else {
+      i++;
     }
   }
 }
@@ -96,8 +106,4 @@ export function updateParticles(dt) {
 export function clearParticles() {
   particles.forEach(p => { p.visible = false; particlePool.push(p); });
   particles.length = 0;
-}
-
-export function getParticles() {
-  return particles;
 }

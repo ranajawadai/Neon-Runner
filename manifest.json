@@ -1,15 +1,15 @@
 {
   "name": "Neon Runner",
   "short_name": "NeonRunner",
-  "description": "Cyberpunk 3D endless runner. Dodge obstacles, collect coins, survive.",
+  "description": "Bioluminescent 3D endless runner. Dodge obstacles, collect glowing plankton, survive the depths.",
   "start_url": "/index.html",
   "display": "fullscreen",
   "orientation": "any",
-  "background_color": "#0a0a1a",
-  "theme_color": "#0a0a1a",
+  "background_color": "#03060b",
+  "theme_color": "#03060b",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230a0a1a' width='100' height='100' rx='20'/><text x='50' y='68' font-size='50' text-anchor='middle'>🏃</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2303060b' width='100' height='100' rx='20'/><text x='50' y='68' font-size='50' text-anchor='middle'>🐠</text></svg>",
       "sizes": "any",
       "type": "image/svg+xml"
     }

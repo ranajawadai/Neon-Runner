@@ -111,6 +111,21 @@ export function sfxCombo() {
   playTone(880, 0.08, 'sine', 0.25);
 }
 
+export function sfxShift() {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(350, audioCtx.currentTime + 0.1);
+  g.gain.setValueAtTime(0.18, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+  osc.connect(g);
+  g.connect(sfxGain);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.12);
+}
+
 export function startAmbient() {
   if (!audioCtx || ambientOsc) return;
   
@@ -143,8 +158,11 @@ export function startAmbient() {
 
 export function stopAmbient() {
   if (ambientOsc) {
-    ambientOsc._lfo.stop();
-    ambientOsc.stop();
+    try { ambientOsc._lfo.stop(); } catch (e) {}
+    try { ambientOsc.stop(); } catch (e) {}
+    try { ambientOsc._lfo.disconnect(); } catch (e) {}
+    try { ambientOsc._filter.disconnect(); } catch (e) {}
+    try { ambientOsc.disconnect(); } catch (e) {}
     ambientOsc = null;
   }
 }
@@ -204,10 +222,12 @@ export function startBGM() {
 
 export function stopBGM() {
   if (bgmOsc) {
-    bgmOsc._lfo.stop();
-    bgmOsc._sub.stop();
-    bgmOsc._arp.stop();
-    bgmOsc.stop();
+    const nodes = [bgmOsc, bgmOsc._lfo, bgmOsc._sub, bgmOsc._arp, bgmOsc._bassGain, bgmOsc._arpGain];
+    nodes.forEach(n => {
+      if (!n) return;
+      try { n.stop(); } catch (e) {}
+      try { n.disconnect(); } catch (e) {}
+    });
     bgmOsc = null;
   }
 }

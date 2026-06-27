@@ -1,9 +1,11 @@
 // Game State Management
 
+import { getTodayDate } from './utils.js';
+
 function safeGet(key, fallback) {
   try {
     const v = localStorage.getItem(key);
-    return v === null ? fallback : v;
+    return (v === null || v === undefined) ? fallback : v;
   } catch (e) {
     return fallback;
   }
@@ -15,10 +17,6 @@ function safeSet(key, value) {
   } catch (e) {
     // localStorage unavailable (e.g. private browsing) - state will not persist this session
   }
-}
-
-function getTodayDate() {
-  return new Date().toDateString();
 }
 
 export const state = {
@@ -38,11 +36,12 @@ export const state = {
   magnet: false,
   magnetTimer: 0,
   shieldTimer: 0,
+  gameMode: safeGet('neonRunnerMode', 'classic'),
   theme: safeGet('neonRunnerTheme', 'neon'),
   character: Number(safeGet('neonRunnerChar', '0')),
   gamesPlayed: Number(safeGet('neonRunnerGames', '0')),
   gamesPlayedToday: Number(safeGet('neonRunnerGames_' + getTodayDate(), '0')),
-  unlockedAchievements: JSON.parse(safeGet('neonRunnerAchievements', '[]')),
+  unlockedAchievements: (() => { try { return JSON.parse(safeGet('neonRunnerAchievements', '[]')); } catch (e) { return []; } })(),
   dailyBest: Number(safeGet('neonRunnerDaily_' + getTodayDate(), '0')),
   streak: Number(safeGet('neonRunnerStreak', '0')),
   lastPlayDate: safeGet('neonRunnerLastPlay', '')
@@ -54,6 +53,7 @@ export function saveState() {
   safeSet('neonRunnerBest', state.best);
   safeSet('neonRunnerGames', state.gamesPlayed);
   safeSet('neonRunnerGames_' + todayDate, state.gamesPlayedToday);
+  safeSet('neonRunnerMode', state.gameMode);
   safeSet('neonRunnerTheme', state.theme);
   safeSet('neonRunnerChar', state.character);
   safeSet('neonRunnerAchievements', JSON.stringify(state.unlockedAchievements));
@@ -107,7 +107,6 @@ export function updateScore(newScore) {
 export function addCoins(amount) {
   state.coins += amount;
   state.runCoins += amount;
-  saveState();
 }
 
 export function incrementGamesPlayed() {

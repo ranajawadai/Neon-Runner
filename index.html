@@ -4,18 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Neon Runner — 3D Endless Runner</title>
-  <meta name="description" content="Dodge obstacles, collect coins, survive. A cyberpunk 3D endless runner built with Three.js." />
-  <meta name="theme-color" content="#0a0a1a" />
+  <meta name="description" content="Dodge obstacles, collect glowing plankton, survive the depths. A bioluminescent 3D endless runner built with Three.js." />
+  <meta name="theme-color" content="#020408" />
 
   <meta property="og:title" content="Neon Runner" />
-  <meta property="og:description" content="Cyberpunk 3D endless runner. Dodge. Collect. Survive." />
+  <meta property="og:description" content="Dive into the deep. Dodge. Collect. Survive." />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="Neon Runner" />
-  <meta name="twitter:description" content="Cyberpunk 3D endless runner. Dodge. Collect. Survive." />
+  <meta name="twitter:description" content="Dive into the deep. Dodge. Collect. Survive." />
 
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏃</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐠</text></svg>" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -27,9 +27,9 @@
         <div class="loading-bar-container">
           <div id="loading-bar" class="loading-bar"></div>
         </div>
-        <p id="loading-text" class="loading-text">Loading assets...</p>
+        <p id="loading-text" class="loading-text">Initializing...</p>
         <div id="load-error" class="load-error hidden">
-          <p>Couldn't load the game. Please check your internet connection.</p>
+          <p>Couldn't load the game. Check your connection and try again.</p>
           <button id="load-retry-btn" class="btn small">RETRY</button>
         </div>
       </div>
@@ -37,25 +37,27 @@
 
     <!-- HUD -->
     <div id="hud" class="hidden" role="status" aria-label="Game status">
-      <div class="hud-item">
-        <span class="hud-label">SCORE</span>
-        <span id="score" class="hud-value">0</span>
-      </div>
-      <div class="hud-item">
-        <span class="hud-label">COINS</span>
-        <span id="coins" class="hud-value">0</span>
-      </div>
-      <div class="hud-item">
-        <span class="hud-label">SPEED</span>
-        <span id="speed" class="hud-value">1.0x</span>
-      </div>
-      <div class="hud-item">
-        <span class="hud-label">COMBO</span>
-        <span id="combo" class="hud-value" style="color:#ffdd00;text-shadow:0 0 12px rgba(255,221,0,0.6);">0</span>
-      </div>
-      <div class="hud-item">
-        <span class="hud-label">LEVEL</span>
-        <span id="difficulty-tier" class="hud-value" style="color:#00ffff;text-shadow:0 0 12px rgba(0,255,255,0.6);">BEGINNER</span>
+      <div class="hud-left">
+        <div class="hud-item">
+          <span class="hud-label">SCORE</span>
+          <span id="score" class="hud-value">0</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">COINS</span>
+          <span id="coins" class="hud-value">0</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">SPEED</span>
+          <span id="speed" class="hud-value">1.0x</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">COMBO</span>
+          <span id="combo" class="hud-value" style="color:#f5a623;text-shadow:0 0 10px rgba(245,166,35,0.4);">0</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">LEVEL</span>
+          <span id="difficulty-tier" class="hud-value" style="color:#2dd4bf;">BEGINNER</span>
+        </div>
       </div>
       <div class="hud-right">
         <span id="fps-counter" class="fps-badge">60 FPS</span>
@@ -63,6 +65,7 @@
         <button id="settings-btn" class="hud-btn" title="Settings" aria-label="Open settings">⚙</button>
       </div>
     </div>
+
     <div id="near-miss-overlay" class="near-miss-flash"></div>
     <div class="powerup-indicator">
       <div id="shield-badge" class="powerup-badge shield">SHIELD<span class="timer"></span></div>
@@ -71,44 +74,49 @@
 
     <!-- Start Screen -->
     <div id="start-screen" class="overlay hidden">
-      <h1 class="title">NEON<span>RUNNER</span></h1>
-      <p class="subtitle">Dodge obstacles. Collect coins. Survive.</p>
+      <div class="start-content">
+        <h1 class="title">NEON<span>RUNNER</span></h1>
+        <p class="subtitle">Dodge obstacles. Collect coins. Survive the depths.</p>
 
-      <div class="selector-row">
-        <div class="selector-group">
-          <label class="selector-label">CHARACTER</label>
-          <div id="char-selector" class="selector-btns"></div>
+        <!-- Game Mode Selector -->
+        <div id="mode-selector" class="mode-selector"></div>
+
+        <div class="selector-row">
+          <div class="selector-group">
+            <label class="selector-label">CHARACTER</label>
+            <div id="char-selector" class="selector-btns"></div>
+          </div>
+          <div class="selector-group">
+            <label class="selector-label">THEME</label>
+            <div id="theme-selector" class="selector-btns"></div>
+          </div>
         </div>
-        <div class="selector-group">
-          <label class="selector-label">THEME</label>
-          <div id="theme-selector" class="selector-btns"></div>
+
+        <div class="stats-row">
+          <span id="menu-best" class="stat-chip">🏆 Best: 0</span>
+          <span id="menu-daily" class="stat-chip">📅 Daily: 0</span>
+          <span id="menu-games" class="stat-chip">🎮 Games: 0</span>
+          <span id="menu-coins" class="stat-chip">💰 Coins: 0</span>
+          <span id="menu-streak" class="stat-chip">🔥 Streak: 0</span>
         </div>
-      </div>
 
-      <div class="stats-row">
-        <span id="menu-best" class="stat-chip">🏆 Best: 0</span>
-        <span id="menu-daily" class="stat-chip">📅 Daily: 0</span>
-        <span id="menu-games" class="stat-chip">🎮 Games: 0</span>
-        <span id="menu-coins" class="stat-chip">💰 Coins: 0</span>
-        <span id="menu-streak" class="stat-chip">🔥 Streak: 0</span>
-      </div>
+        <div id="daily-challenges" class="daily-challenges">
+          <div class="daily-header">DAILY CHALLENGES</div>
+          <div id="challenge-list" class="challenge-list"></div>
+        </div>
 
-      <div id="daily-challenges" class="daily-challenges">
-        <div class="daily-header">DAILY CHALLENGES</div>
-        <div id="challenge-list" class="challenge-list"></div>
-      </div>
+        <button id="start-btn" class="btn" aria-label="Start game">START</button>
+        <button id="achievements-btn" class="btn secondary small">ACHIEVEMENTS</button>
 
-      <button id="start-btn" class="btn" aria-label="Start game">START</button>
-      <button id="achievements-btn" class="btn secondary small">ACHIEVEMENTS</button>
+        <div class="fps-info">
+          <span class="fps-big">60</span>
+          <span class="fps-label">FPS</span>
+          <span class="fps-sub">HIGH PERFORMANCE</span>
+        </div>
 
-      <div class="fps-info">
-        <span class="fps-big">60</span>
-        <span class="fps-label">FPS</span>
-        <span class="fps-sub">HIGH PERFORMANCE</span>
-      </div>
-
-      <div class="controls-hint">
-        <p>← → Switch lanes &nbsp;|&nbsp; Space Jump &nbsp;|&nbsp; ESC Pause</p>
+        <div class="controls-hint">
+          <p id="controls-hint-text">← → Switch lanes &nbsp;|&nbsp; Space Jump &nbsp;|&nbsp; ESC Pause</p>
+        </div>
       </div>
     </div>
 
@@ -117,7 +125,7 @@
       <h1 class="title small">PAUSED</h1>
       <button id="resume-btn" class="btn">RESUME</button>
       <button id="pause-settings-btn" class="btn secondary">SETTINGS</button>
-      <button id="quit-btn" class="btn secondary">QUIT</button>
+      <button id="quit-btn" class="btn secondary danger" style="margin-top:4px;">QUIT</button>
     </div>
 
     <!-- Settings Screen -->
@@ -162,6 +170,7 @@
       <div id="achievements-list" class="achievements-grid"></div>
       <button id="ach-back-btn" class="btn">BACK</button>
     </div>
+
     <div id="screen-transition" class="screen-transition"></div>
   </div>
 

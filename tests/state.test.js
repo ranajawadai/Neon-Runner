@@ -1,9 +1,11 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { state, resetGameState, updateScore, addCoins, incrementGamesPlayed } from '../js/state.js';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { state, resetGameState, updateScore, addCoins, incrementGamesPlayed, saveState, updateStreak } from '../js/state.js';
 
 describe('State', () => {
   beforeEach(() => {
     resetGameState();
+    localStorage.clear();
+    vi.restoreAllMocks();
   });
 
   describe('resetGameState', () => {
@@ -30,6 +32,12 @@ describe('State', () => {
       resetGameState();
       expect(state.multiplier).toBe(1);
     });
+
+    it('should not reset gameMode', () => {
+      state.gameMode = 'speed';
+      resetGameState();
+      expect(state.gameMode).toBe('speed');
+    });
   });
 
   describe('updateScore', () => {
@@ -49,13 +57,25 @@ describe('State', () => {
       updateScore(1000);
       expect(state.best).toBe(5000);
     });
+
+    it('should update dailyBest if new score is higher', () => {
+      state.dailyBest = 500;
+      updateScore(1000);
+      expect(state.dailyBest).toBe(1000);
+    });
   });
 
   describe('addCoins', () => {
-    it('should add coins', () => {
+    it('should add to total coins', () => {
       state.coins = 100;
       addCoins(50);
       expect(state.coins).toBe(150);
+    });
+
+    it('should add to runCoins', () => {
+      state.runCoins = 10;
+      addCoins(5);
+      expect(state.runCoins).toBe(15);
     });
   });
 
@@ -70,6 +90,43 @@ describe('State', () => {
       state.gamesPlayedToday = 2;
       incrementGamesPlayed();
       expect(state.gamesPlayedToday).toBe(3);
+    });
+  });
+
+  describe('saveState', () => {
+    it('should save best to localStorage', () => {
+      state.best = 9999;
+      saveState();
+      expect(localStorage.setItem).toHaveBeenCalledWith('neonRunnerBest', 9999);
+    });
+
+    it('should save coins to localStorage', () => {
+      state.coins = 500;
+      saveState();
+      expect(localStorage.setItem).toHaveBeenCalledWith('neonRunnerCoins', 500);
+    });
+
+    it('should save gameMode to localStorage', () => {
+      state.gameMode = 'hardcore';
+      saveState();
+      expect(localStorage.setItem).toHaveBeenCalledWith('neonRunnerMode', 'hardcore');
+    });
+  });
+
+  describe('updateStreak', () => {
+    it('should set streak to 1 on first play', () => {
+      state.lastPlayDate = '';
+      state.streak = 0;
+      updateStreak();
+      expect(state.streak).toBe(1);
+    });
+
+    it('should not increment streak if already played today', () => {
+      const today = new Date().toDateString();
+      state.lastPlayDate = today;
+      state.streak = 5;
+      updateStreak();
+      expect(state.streak).toBe(5);
     });
   });
 });

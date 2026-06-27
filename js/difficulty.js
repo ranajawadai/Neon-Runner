@@ -1,18 +1,9 @@
 // Difficulty Progression System
 
 import { DIFFICULTY_TIERS } from './config.js';
-import { state } from './state.js';
 import { sfxTierUp } from './audio.js';
 
 let lastTierIdx = 0;
-
-export function getCurrentTier() {
-  const score = state.score;
-  for (let i = DIFFICULTY_TIERS.length - 1; i >= 0; i--) {
-    if (score >= DIFFICULTY_TIERS[i].minScore) return DIFFICULTY_TIERS[i];
-  }
-  return DIFFICULTY_TIERS[0];
-}
 
 export function showTierChange(newTier) {
   const tierIdx = DIFFICULTY_TIERS.indexOf(newTier);
@@ -26,9 +17,11 @@ export function showTierChange(newTier) {
     setTimeout(() => flash.remove(), 1000);
     
     const tierNames = ['BEGINNER', 'ROOKIE', 'PRO', 'EXPERT', 'LEGEND'];
+    const tierColors = ['#2dd4bf', '#1a8f82', '#f5a623', '#ff6b35', '#d946a8'];
+    const tierGlows = ['#2dd4bf', '#0d6b62', '#f5a623', '#c94f1f', '#9b2f72'];
     const el = document.createElement('div');
     el.textContent = tierNames[tierIdx] + '!';
-    el.style.cssText = 'position:fixed;top:25%;left:50%;transform:translate(-50%,-50%);font-size:56px;font-weight:900;color:#00ffff;text-shadow:0 0 30px #00ffff,0 0 60px #00ff88;pointer-events:none;z-index:100;transition:all 1s ease-out;opacity:1;';
+    el.style.cssText = 'position:fixed;top:25%;left:50%;transform:translate(-50%,-50%);font-size:56px;font-weight:900;color:' + tierColors[tierIdx] + ';text-shadow:0 0 30px ' + tierColors[tierIdx] + ',0 0 60px ' + tierGlows[tierIdx] + ';pointer-events:none;z-index:100;transition:all 1s ease-out;opacity:1;';
     document.body.appendChild(el);
     requestAnimationFrame(() => {
       el.style.top = '15%';
@@ -51,5 +44,5 @@ export function getTierName(tier) {
 
 export function getTierColor(tier) {
   const tierIdx = DIFFICULTY_TIERS.indexOf(tier);
-  return ['#00ffff', '#00ff88', '#ffdd00', '#ff6600', '#ff0044'][tierIdx] || '#00ffff';
+  return ['#2dd4bf', '#1a8f82', '#f5a623', '#ff6b35', '#d946a8'][tierIdx] || '#2dd4bf';
 }

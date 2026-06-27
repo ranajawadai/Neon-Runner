@@ -2,7 +2,7 @@
 
 # NEON RUNNER
 
-### *A Premium Cyberpunk 3D Endless Runner*
+### *A Premium Bioluminescent 3D Endless Runner*
 
 **[PLAY NOW](https://ranajawadai.github.io/Neon-Runner/)** • **[REPORT BUG](https://github.com/ranajawadai/Neon-Runner/issues)** • **[CONTRIBUTE](#contributing)**
 
@@ -15,7 +15,7 @@
 
 <br>
 
-**A fast-paced, neon-drenched 3D endless runner** with bloom post-processing, procedural audio, and buttery-smooth 60fps gameplay. Zero external assets — everything is generated in real-time.
+**A fast-paced, bioluminescent 3D endless runner** with bloom post-processing, procedural audio, and buttery-smooth 60fps gameplay. Zero external assets — everything is generated in real-time. Dive through six depth zones, from sunlit shallows to the bioluminescent abyss.
 
 [![Demo](https://img.shields.io/badge/WATCH-DEMO-red?style=for-the-badge&logo=youtube&logoColor=white)](https://ranajawadai.github.io/Neon-Runner/)
 
@@ -27,9 +27,10 @@
 
 > *"Most browser games feel like prototypes. This one feels like a product."*
 
-- **Bloom post-processing** — real neon glow, not just bright colors
+- **Bloom post-processing** — real bioluminescent glow, not just bright colors
+- **Six depth zones** — Shallows, Kelp Forest, Twilight Reef, Abyssal Trench, Hydrothermal Vent, Bioluminescent Abyss, unlocked by score
 - **Procedural everything** — audio, particles, effects, all generated at runtime
-- **Buttery smooth** — 60fps with object pooling and optimized rendering
+- **Buttery smooth** — 60fps with object pooling, optimized rendering, and automatic bloom downgrade on low-end hardware
 - **Mobile-first** — swipe controls, responsive UI, PWA installable
 - **Zero dependencies** — just Three.js via CDN, no build step required
 
@@ -61,14 +62,15 @@ DODGE ← → COLLECT COINS ← → SURVIVE ← → REPEAT
 <details>
 <summary><b>Core Gameplay</b></summary>
 
-- 3 obstacle types: cubes, pyramids, walls
+- 6 obstacle types: cubes, pyramids, walls, lasers, spinners, sliding panels
 - Moving obstacles that shift lanes
 - Jump physics with gravity
-- Dynamic speed ramp (1x to 3x)
+- Dynamic speed ramp across 5 difficulty tiers
 - Combo multiplier (up to 3x+)
 - High score saved to localStorage
-- Daily best tracking
+- Daily best tracking + daily challenges (3 random challenges per day, coin rewards)
 - Achievement system (8 achievements)
+- 6 unlockable depth-zone themes + 6 unlockable characters, both gated by best score
 
 </details>
 
@@ -180,12 +182,11 @@ open http://localhost:8080
 
 | Metric | Value |
 |--------|-------|
-| Lines of code | ~1,500 |
 | External dependencies | 1 (Three.js via CDN) |
 | Audio files | 0 (all procedural) |
 | Bundle size | ~0KB (CDN-loaded) |
 | Load time | <1s |
-| Frame rate | 60fps |
+| Frame rate | 60fps (adaptive bloom downgrade below 30fps) |
 | Platforms | Desktop, Mobile, Tablet |
 | Browsers | Chrome, Firefox, Safari, Edge |
 
@@ -293,20 +294,19 @@ Contributions welcome! Here's how:
 
 ### Ideas for contributions:
 
-- New obstacle types (lasers, rotating barriers)
+- New obstacle types beyond the current 6
 - New power-ups (slow-mo, double jump, score multiplier)
 - Global leaderboard
-- Daily challenges
-- Multiple environments (retro, space, underwater)
-- Stats tracking and analytics
-- Sound effect improvements
+- Additional depth zones beyond the current 6
+- Sound effect and music variety per theme
+- Unit test coverage for `main.js` (currently only `state.js`, `utils.js`, `difficulty.js` are tested)
 
 ---
 
 ## Roadmap
 
 - [x] Core 3-lane runner
-- [x] 3 obstacle types + moving obstacles
+- [x] 6 obstacle types + moving/pulsing/spinning/sliding behaviors
 - [x] Coin system + combo multiplier
 - [x] Power-ups (Magnet, Shield, Multiplier)
 - [x] Bloom post-processing
@@ -318,10 +318,10 @@ Contributions welcome! Here's how:
 - [x] Object pooling (performance)
 - [x] Mobile scaling + accessibility
 - [x] Achievement system
+- [x] Daily challenges
+- [x] Multiple depth-zone environments (6 themes)
+- [x] Stats tracking (in-settings analytics panel)
 - [ ] Global leaderboard
-- [ ] Daily challenges
-- [ ] Multiple environments
-- [ ] Stats tracking
 
 ---
 
