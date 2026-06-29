@@ -14,21 +14,20 @@ export function showTierChange(newTier) {
     const flash = document.createElement('div');
     flash.className = 'tier-up-flash';
     document.body.appendChild(flash);
-    setTimeout(() => flash.remove(), 1000);
+    setTimeout(() => flash.remove(), 800);
 
     const tierNames = ['BEGINNER', 'ROOKIE', 'PRO', 'EXPERT', 'LEGEND'];
-    const tierColors = ['#3dd4c0', '#2a9aaa', '#e8a630', '#cc6633', '#cc4488'];
-    const tierGlows = ['#3dd4c0', '#2a88aa', '#d49922', '#bb5522', '#bb3377'];
+    const tierColors = ['#00ffcc', '#00aaff', '#ffdd00', '#ff6600', '#ff0066'];
     const el = document.createElement('div');
     el.textContent = tierNames[tierIdx] + '!';
-    el.style.cssText = 'position:fixed;top:25%;left:50%;transform:translate(-50%,-50%);font-size:48px;font-weight:800;font-family:Orbitron,monospace;letter-spacing:3px;color:' + tierColors[tierIdx] + ';text-shadow:0 0 20px ' + tierColors[tierIdx] + ',0 0 40px ' + tierGlows[tierIdx] + ';pointer-events:none;z-index:100;transition:all 1s ease-out;opacity:1;';
+    el.style.cssText = 'position:fixed;top:25%;left:50%;transform:translate(-50%,-50%);font-size:44px;font-weight:800;font-family:Orbitron,monospace;letter-spacing:3px;color:' + tierColors[tierIdx] + ';pointer-events:none;z-index:100;transition:all 0.8s ease-out;opacity:1;';
     document.body.appendChild(el);
     requestAnimationFrame(() => {
       el.style.top = '15%';
       el.style.opacity = '0';
-      el.style.transform = 'translate(-50%,-50%) scale(1.3)';
+      el.style.transform = 'translate(-50%,-50%) scale(1.2)';
     });
-    setTimeout(() => el.remove(), 1100);
+    setTimeout(() => el.remove(), 900);
   }
 }
 
@@ -44,5 +43,5 @@ export function getTierName(tier) {
 
 export function getTierColor(tier) {
   const tierIdx = DIFFICULTY_TIERS.indexOf(tier);
-  return ['#3dd4c0', '#2a9aaa', '#e8a630', '#cc6633', '#cc4488'][tierIdx] || '#3dd4c0';
+  return ['#00ffcc', '#00aaff', '#ffdd00', '#ff6600', '#ff0066'][tierIdx] || '#00ffcc';
 }

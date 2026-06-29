@@ -68,14 +68,14 @@ export function checkDailyChallenges() {
 
 function showChallengeComplete(rewards) {
   const el = document.createElement('div');
-  el.style.cssText = 'position:fixed;top:20px;right:20px;background:rgba(6,12,20,0.95);border:1px solid rgba(61,212,192,0.3);border-radius:12px;padding:16px 20px;text-align:center;z-index:100;transition:all 0.5s ease-out;opacity:0;transform:translateX(100px);box-shadow:0 0 15px rgba(61,212,192,0.15);';
+  el.style.cssText = 'position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.9);border:1px solid rgba(0,255,204,0.3);border-radius:8px;padding:14px 18px;text-align:center;z-index:100;transition:all 0.4s ease-out;opacity:0;transform:translateX(100px);';
 
   const iconEl = document.createElement('div');
   iconEl.style.fontSize = '24px';
   iconEl.textContent = '🎯';
 
   const titleEl = document.createElement('div');
-  titleEl.style.cssText = 'font-size:16px;font-weight:bold;color:#3dd4c0';
+  titleEl.style.cssText = 'font-size:14px;font-weight:bold;color:#00ffcc';
   titleEl.textContent = 'Challenge Complete!';
 
   const rewardEl = document.createElement('div');

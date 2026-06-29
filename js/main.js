@@ -147,8 +147,8 @@ function init() {
 
 function setupScene() {
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0a1e2e);
-  scene.fog = new THREE.FogExp2(0x1a3a4a, 0.007);
+  scene.background = new THREE.Color(0x0a0a1a);
+  scene.fog = new THREE.FogExp2(0x0a0a1a, 0.003);
 }
 
 function setupCamera() {
@@ -192,42 +192,29 @@ function setupBloom() {
 }
 
 function createMaterials() {
-  obstacleMat = new THREE.MeshStandardMaterial({
-    color: 0xff3355,
-    emissive: 0xff2244,
-    emissiveIntensity: 0.5,
-    metalness: 0.4,
-    roughness: 0.3,
+  // Obstacles — BRIGHT RED, unlit, always visible
+  obstacleMat = new THREE.MeshBasicMaterial({
+    color: 0xff2200,
   });
 
-  // Pre-create material variants for each obstacle type — no more clone per spawn
+  // Pre-create material variants for each obstacle type
   obstacleMats.cube = obstacleMat;
   obstacleMats.pyramid = obstacleMat;
   obstacleMats.wall = obstacleMat;
   obstacleMats.spinner = obstacleMat;
   obstacleMats.slider = obstacleMat;
-  obstacleMats.laser = new THREE.MeshStandardMaterial({
-    color: 0xff2244,
-    emissive: 0xff2244,
-    emissiveIntensity: 0.8,
-    metalness: 0.4,
-    roughness: 0.3,
+  obstacleMats.laser = new THREE.MeshBasicMaterial({
+    color: 0xff0000,
   });
 
-  coinMat = new THREE.MeshStandardMaterial({
-    color: 0x44ddcc,
-    emissive: 0x33bbaa,
-    emissiveIntensity: 0.5,
-    metalness: 0.6,
-    roughness: 0.25,
+  // Coins — BRIGHT YELLOW, unlit
+  coinMat = new THREE.MeshBasicMaterial({
+    color: 0xffdd00,
   });
 
-  playerMat = new THREE.MeshStandardMaterial({
-    color: 0x33ddcc,
-    emissive: 0x33ddcc,
-    emissiveIntensity: 0.6,
-    metalness: 0.5,
-    roughness: 0.2,
+  // Player — BRIGHT CYAN, unlit
+  playerMat = new THREE.MeshBasicMaterial({
+    color: 0x00ffcc,
   });
 }
 
@@ -237,26 +224,25 @@ function createMaterials() {
 // ═══════════════════════════════════════════════════════════════
 
 function buildLights() {
-  // Hemisphere light — natural sky/ground ambient
-  hemiLight = new THREE.HemisphereLight(0x3a5a7a, 0x0a1520, 0.6);
-  scene.add(hemiLight);
-
-  // Ambient fill
-  ambientLight = new THREE.AmbientLight(0x2a3a5a, 0.7);
+  // Simple bright ambient — everything visible
+  ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
   scene.add(ambientLight);
 
-  // Main directional — overhead key light
-  dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  // Hemisphere for sky/ground
+  hemiLight = new THREE.HemisphereLight(0x444466, 0x111122, 0.5);
+  scene.add(hemiLight);
+
+  // Directional
+  dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
   dirLight.position.set(4, 14, 6);
   scene.add(dirLight);
 
-  // Cyan accent — ahead of player
-  accentLightA = new THREE.PointLight(0x44ddcc, 1.0, 50);
+  // Accent lights
+  accentLightA = new THREE.PointLight(0x00ffcc, 0.5, 40);
   accentLightA.position.set(0, 6, -12);
   scene.add(accentLightA);
 
-  // Warm accent — behind player
-  accentLightB = new THREE.PointLight(0xffaa44, 0.6, 35);
+  accentLightB = new THREE.PointLight(0xff2200, 0.3, 30);
   accentLightB.position.set(0, 4, 8);
   scene.add(accentLightB);
 }
@@ -269,11 +255,8 @@ function buildLights() {
 function buildGround() {
   // Main ground plane
   const groundGeo = new THREE.PlaneGeometry(60, 400);
-  const groundMat = new THREE.MeshStandardMaterial({
-    color: 0x0e2a38,
-    metalness: 0.3,
-    roughness: 0.7,
-    envMapIntensity: 0.4,
+  const groundMat = new THREE.MeshBasicMaterial({
+    color: 0x111122,
   });
   const ground = new THREE.Mesh(groundGeo, groundMat);
   ground.rotation.x = -Math.PI / 2;
@@ -281,9 +264,9 @@ function buildGround() {
   scene.add(ground);
 
   // Grid overlay
-  grid = new THREE.GridHelper(400, 80, 0x44ddcc, 0x2a8a7a);
+  grid = new THREE.GridHelper(400, 80, 0x00ffcc, 0x00ffcc);
   grid.material.transparent = true;
-  grid.material.opacity = 0.15;
+  grid.material.opacity = 0.12;
   grid.position.set(0, 0.02, gridStartZ);
   scene.add(grid);
 }
@@ -291,19 +274,18 @@ function buildGround() {
 function buildLaneMarkers() {
   // Lane dividers
   const markerMat = new THREE.MeshBasicMaterial({
-    color: 0x44ddcc,
+    color: 0x00ffcc,
     transparent: true,
-    opacity: 0.08,
+    opacity: 0.06,
   });
 
-  // Two divider lines between 3 lanes
   const dividers = [
     (LANES[0] + LANES[1]) / 2,
     (LANES[1] + LANES[2]) / 2,
   ];
 
   dividers.forEach(x => {
-    const geo = new THREE.PlaneGeometry(0.04, 300);
+    const geo = new THREE.PlaneGeometry(0.03, 300);
     const marker = new THREE.Mesh(geo, markerMat.clone());
     marker.rotation.x = -Math.PI / 2;
     marker.position.set(x, 0.03, gridStartZ);
@@ -311,15 +293,15 @@ function buildLaneMarkers() {
     laneMarkers.push(marker);
   });
 
-  // Lane center indicators
+  // Lane dots
   LANES.forEach(x => {
-    const dotGeo = new THREE.CircleGeometry(0.08, 12);
+    const dotGeo = new THREE.CircleGeometry(0.06, 8);
     const dotMat = new THREE.MeshBasicMaterial({
-      color: 0x44ddcc,
+      color: 0x00ffcc,
       transparent: true,
-      opacity: 0.1,
+      opacity: 0.08,
     });
-    for (let z = -5; z > -80; z -= 8) {
+    for (let z = -5; z > -80; z -= 10) {
       const dot = new THREE.Mesh(dotGeo, dotMat.clone());
       dot.rotation.x = -Math.PI / 2;
       dot.position.set(x, 0.035, z);
@@ -332,63 +314,42 @@ function buildLaneMarkers() {
 function buildPlayer() {
   const char = CHARACTERS[state.character];
   const geo = getCharacterGeometry(char.shape, THREE);
-  const mat = new THREE.MeshStandardMaterial({
+  playerMat = new THREE.MeshBasicMaterial({
     color: char.color,
-    emissive: char.color,
-    emissiveIntensity: 0.5,
-    metalness: 0.5,
-    roughness: 0.2,
   });
-  playerMat = mat;
-  player = new THREE.Mesh(geo, mat);
+  player = new THREE.Mesh(geo, playerMat);
   player.position.set(0, GROUND_Y, 0);
   scene.add(player);
 
   // Player shadow — circular shadow on ground
-  const shadowGeo = new THREE.CircleGeometry(0.8, 24);
+  const shadowGeo = new THREE.CircleGeometry(0.7, 24);
   const shadowMat = new THREE.MeshBasicMaterial({
     color: 0x000000,
     transparent: true,
-    opacity: 0.3,
+    opacity: 0.4,
     depthWrite: false,
   });
   playerShadow = new THREE.Mesh(shadowGeo, shadowMat);
   playerShadow.rotation.x = -Math.PI / 2;
   playerShadow.position.set(0, 0.02, 0);
   scene.add(playerShadow);
-
-  // Glow shell — slightly larger transparent shell
-  const glowGeo = getCharacterGeometry(char.shape, THREE);
-  glowGeo.scale(1.3, 1.3, 1.3);
-  const glowMat = new THREE.MeshBasicMaterial({
-    color: char.color,
-    transparent: true,
-    opacity: 0.06,
-    side: THREE.BackSide,
-  });
-  const glow = new THREE.Mesh(glowGeo, glowMat);
-  player.add(glow);
-
-  // Player point light — subtle
-  const pl = new THREE.PointLight(char.color, 0.5, 8);
-  player.add(pl);
 }
 
 function buildStars() {
   const geo = new THREE.BufferGeometry();
-  const n = 1000;
+  const n = 500;
   const pos = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) {
-    pos[i * 3]     = (Math.random() - 0.5) * 300;
-    pos[i * 3 + 1] = Math.random() * 80 + 5;
-    pos[i * 3 + 2] = (Math.random() - 0.5) * 400 - 80;
+    pos[i * 3]     = (Math.random() - 0.5) * 200;
+    pos[i * 3 + 1] = Math.random() * 60 + 5;
+    pos[i * 3 + 2] = (Math.random() - 0.5) * 300 - 80;
   }
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   const mat = new THREE.PointsMaterial({
-    color: 0x44ddff,
-    size: 0.4,
+    color: 0x4444ff,
+    size: 0.3,
     transparent: true,
-    opacity: 0.8,
+    opacity: 0.6,
     sizeAttenuation: true,
   });
   starField = new THREE.Points(geo, mat);
@@ -402,14 +363,14 @@ function buildTrail() {
   const mat = new THREE.LineBasicMaterial({
     color: 0x00ffcc,
     transparent: true,
-    opacity: 0.4,
+    opacity: 0.2,
   });
   trailLine = new THREE.Line(geo, mat);
   scene.add(trailLine);
 }
 
 function buildSpeedLines() {
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 20; i++) {
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(6);
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -420,9 +381,9 @@ function buildSpeedLines() {
     });
     const line = new THREE.Line(geo, mat);
     line.position.set(
-      (Math.random() - 0.5) * 12,
-      Math.random() * 4 + 0.5,
-      -Math.random() * 70 - 10
+      (Math.random() - 0.5) * 10,
+      Math.random() * 3 + 0.5,
+      -Math.random() * 50 - 10
     );
     line.visible = false;
     scene.add(line);
@@ -579,20 +540,19 @@ function applyTheme(themeId) {
   scene.background = new THREE.Color(t.bg);
   if (scene.fog) {
     scene.fog.color.set(t.fog);
-    if (scene.fog.density !== undefined) scene.fog.density = t.fogDensity || 0.008;
+    if (scene.fog.density !== undefined) scene.fog.density = t.fogDensity || 0.003;
   }
 
   grid.material.color.set(t.gridA);
-  grid.material.opacity = 0.18;
+  grid.material.opacity = 0.12;
 
+  // Update obstacle and coin colors (MeshBasicMaterial — no emissive)
   obstacleMat.color.set(t.obstacle);
-  obstacleMat.emissive.set(t.obstacleEmissive || t.obstacle);
   coinMat.color.set(t.coin);
-  coinMat.emissive.set(t.coinEmissive || t.coin);
 
   if (ambientLight) {
     ambientLight.color.set(t.ambient || t.bg);
-    ambientLight.intensity = t.ambientIntensity !== undefined ? t.ambientIntensity : 0.5;
+    ambientLight.intensity = t.ambientIntensity !== undefined ? t.ambientIntensity : 0.8;
   }
   if (hemiLight) {
     hemiLight.color.set(t.lightA || t.gridA);
@@ -602,7 +562,7 @@ function applyTheme(themeId) {
   if (accentLightB) accentLightB.color.set(t.lightB || t.gridB);
 
   if (starField && starField.material) {
-    starField.material.color.set(t.star || 0xaae8f0);
+    starField.material.color.set(t.star || 0x4444ff);
   }
 
   // Update lane markers
@@ -617,12 +577,8 @@ function applyTheme(themeId) {
     }
   });
 
-  // Update player if using default color
-  const char = CHARACTERS[state.character];
-  if (char && char.color === 0x00ffcc) {
-    playerMat.color.set(t.player);
-    playerMat.emissive.set(t.player);
-  }
+  // Update player color
+  playerMat.color.set(t.player);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1652,40 +1608,19 @@ function quitToMenu() {
 function rebuildPlayer() {
   const char = CHARACTERS[state.character];
   const geo = getCharacterGeometry(char.shape, THREE);
-  const mat = new THREE.MeshStandardMaterial({
+  playerMat = new THREE.MeshBasicMaterial({
     color: char.color,
-    emissive: char.color,
-    emissiveIntensity: 0.5,
-    metalness: 0.5,
-    roughness: 0.2,
   });
-  playerMat = mat;
   player.geometry.dispose();
   player.geometry = geo;
-  player.material = mat;
+  player.material = playerMat;
 
-  // Rebuild children (glow + light)
+  // Remove children
   player.children.forEach(c => {
     if (c.geometry) c.geometry.dispose();
     if (c.material) c.material.dispose();
     player.remove(c);
   });
-
-  const glowGeo = getCharacterGeometry(char.shape, THREE);
-  glowGeo.scale(1.3, 1.3, 1.3);
-  const glowMat = new THREE.MeshBasicMaterial({
-    color: char.color,
-    transparent: true,
-    opacity: 0.06,
-    side: THREE.BackSide,
-  });
-  player.add(new THREE.Mesh(glowGeo, glowMat));
-  player.add(new THREE.PointLight(char.color, 0.5, 8));
-
-  // Update shadow color
-  if (playerShadow) {
-    playerShadow.material.color.set(0x000000);
-  }
 }
 
 
@@ -1705,14 +1640,14 @@ function showMilestone(distance) {
   const el = document.createElement('div');
   el.textContent = distance + 'm!';
   el.style.cssText = 'position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);' +
-    'font-family:Orbitron,monospace;font-size:48px;font-weight:800;letter-spacing:3px;color:#3dd4c0;' +
-    'text-shadow:0 0 15px #3dd4c0,0 0 30px #2a9a88;pointer-events:none;z-index:100;' +
+    'font-family:Orbitron,monospace;font-size:44px;font-weight:800;letter-spacing:3px;color:#00ffcc;' +
+    'pointer-events:none;z-index:100;' +
     'transition:all 0.8s cubic-bezier(0.22,1,0.36,1);opacity:1;';
   document.body.appendChild(el);
   requestAnimationFrame(() => {
     el.style.top = '20%';
     el.style.opacity = '0';
-    el.style.transform = 'translate(-50%,-50%) scale(1.3)';
+    el.style.transform = 'translate(-50%,-50%) scale(1.2)';
   });
   setTimeout(() => el.remove(), 900);
 }
