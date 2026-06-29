@@ -79,6 +79,10 @@ let flashTimeout = null;
 
 // Screen transition
 let showScreenTimeout = null;
+let isTransitioning = false;
+
+// Touch sensitivity (1-10, default 5)
+let touchSensitivity = 5;
 
 // Shared materials
 let obstacleMat, coinMat, playerMat;
@@ -140,14 +144,14 @@ function init() {
 
 function setupScene() {
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0e5a6b);
-  scene.fog = new THREE.FogExp2(0x1a8a9a, 0.008);
+  scene.background = new THREE.Color(0x040810);
+  scene.fog = new THREE.FogExp2(0x0a1628, 0.006);
 }
 
 function setupCamera() {
-  camera = new THREE.PerspectiveCamera(68, window.innerWidth / window.innerHeight, 0.1, 250);
-  camera.position.set(0, 3.6, 7.5);
-  camera.lookAt(0, 1.2, -10);
+  camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.1, 300);
+  camera.position.set(0, 3.8, 7.5);
+  camera.lookAt(0, 1.0, -12);
 }
 
 function setupRenderer() {
@@ -160,7 +164,8 @@ function setupRenderer() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.1;
+  renderer.toneMappingExposure = 1.3;  // brighter for more vibrant colors
+  renderer.shadowMap.enabled = false;   // save perf, bloom handles glow
   renderer.domElement.style.display = 'block';
   renderer.domElement.style.position = 'absolute';
   renderer.domElement.style.top = '0';
@@ -176,20 +181,20 @@ function setupBloom() {
 
   bloomPass = new THREE.UnrealBloomPass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
-    0.8,   // strength — strong neon glow
-    0.4,   // radius — soft spread
-    0.55   // threshold — only bright things bloom
+    1.2,   // strength — intense neon glow
+    0.6,   // radius — wide spread for cinematic feel
+    0.35   // threshold — more things bloom
   );
   composer.addPass(bloomPass);
 }
 
 function createMaterials() {
   obstacleMat = new THREE.MeshStandardMaterial({
-    color: 0xff4466,
-    emissive: 0xff2244,
-    emissiveIntensity: 0.7,
-    metalness: 0.4,
-    roughness: 0.3,
+    color: 0xff2255,
+    emissive: 0xff1144,
+    emissiveIntensity: 1.0,
+    metalness: 0.5,
+    roughness: 0.2,
   });
 
   // Pre-create material variants for each obstacle type — no more clone per spawn
@@ -199,27 +204,27 @@ function createMaterials() {
   obstacleMats.spinner = obstacleMat;
   obstacleMats.slider = obstacleMat;
   obstacleMats.laser = new THREE.MeshStandardMaterial({
-    color: 0xff3344,
-    emissive: 0xff3344,
-    emissiveIntensity: 1.2,
-    metalness: 0.4,
-    roughness: 0.3,
+    color: 0xff0044,
+    emissive: 0xff0044,
+    emissiveIntensity: 1.8,
+    metalness: 0.6,
+    roughness: 0.15,
   });
 
   coinMat = new THREE.MeshStandardMaterial({
-    color: 0x5ee8d6,
-    emissive: 0x3bd4c0,
-    emissiveIntensity: 0.6,
-    metalness: 0.7,
-    roughness: 0.25,
+    color: 0x00ffcc,
+    emissive: 0x00ddaa,
+    emissiveIntensity: 1.0,
+    metalness: 0.8,
+    roughness: 0.15,
   });
 
   playerMat = new THREE.MeshStandardMaterial({
-    color: 0x2dd4bf,
-    emissive: 0x2dd4bf,
-    emissiveIntensity: 0.9,
-    metalness: 0.5,
-    roughness: 0.2,
+    color: 0x00ffcc,
+    emissive: 0x00ffcc,
+    emissiveIntensity: 1.2,
+    metalness: 0.6,
+    roughness: 0.15,
   });
 }
 
@@ -230,25 +235,25 @@ function createMaterials() {
 
 function buildLights() {
   // Hemisphere light — natural sky/ground ambient
-  hemiLight = new THREE.HemisphereLight(0x4a9aaa, 0x0a2030, 0.5);
+  hemiLight = new THREE.HemisphereLight(0x0a2040, 0x020408, 0.4);
   scene.add(hemiLight);
 
-  // Ambient fill
-  ambientLight = new THREE.AmbientLight(0x4a9aaa, 0.6);
+  // Ambient fill — very subtle
+  ambientLight = new THREE.AmbientLight(0x0a1a30, 0.5);
   scene.add(ambientLight);
 
   // Main directional — overhead key light
-  dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+  dirLight = new THREE.DirectionalLight(0xeeffff, 0.6);
   dirLight.position.set(4, 14, 6);
   scene.add(dirLight);
 
-  // Cyan accent — ahead of player
-  accentLightA = new THREE.PointLight(0x7fe8da, 1.4, 50);
+  // Cyan accent — ahead of player (primary glow)
+  accentLightA = new THREE.PointLight(0x00ffcc, 2.0, 60);
   accentLightA.position.set(0, 6, -12);
   scene.add(accentLightA);
 
-  // Warm accent — behind player
-  accentLightB = new THREE.PointLight(0xffb74d, 0.8, 35);
+  // Magenta accent — behind player (secondary glow)
+  accentLightB = new THREE.PointLight(0xff0066, 1.2, 40);
   accentLightB.position.set(0, 4, 8);
   scene.add(accentLightB);
 }
@@ -259,33 +264,33 @@ function buildLights() {
 // ═══════════════════════════════════════════════════════════════
 
 function buildGround() {
-  // Main ground plane
-  const groundGeo = new THREE.PlaneGeometry(50, 400);
+  // Main ground plane — deep dark with subtle gradient
+  const groundGeo = new THREE.PlaneGeometry(60, 400);
   const groundMat = new THREE.MeshStandardMaterial({
-    color: 0x0a3e48,
-    metalness: 0.3,
-    roughness: 0.7,
-    envMapIntensity: 0.5,
+    color: 0x040810,
+    metalness: 0.5,
+    roughness: 0.6,
+    envMapIntensity: 0.3,
   });
   const ground = new THREE.Mesh(groundGeo, groundMat);
   ground.rotation.x = -Math.PI / 2;
   ground.position.z = gridStartZ;
   scene.add(ground);
 
-  // Grid overlay
-  grid = new THREE.GridHelper(400, 100, 0x5ee8d6, 0x3bbca8);
+  // Grid overlay — crisp neon lines
+  grid = new THREE.GridHelper(400, 80, 0x00ffcc, 0x004466);
   grid.material.transparent = true;
-  grid.material.opacity = 0.18;
+  grid.material.opacity = 0.22;
   grid.position.set(0, 0.02, gridStartZ);
   scene.add(grid);
 }
 
 function buildLaneMarkers() {
-  // Glowing lane dividers — thin lines on the ground
+  // Glowing lane dividers — neon lines
   const markerMat = new THREE.MeshBasicMaterial({
-    color: 0x2dd4bf,
+    color: 0x00ffcc,
     transparent: true,
-    opacity: 0.08,
+    opacity: 0.12,
   });
 
   // Two divider lines between 3 lanes
@@ -295,7 +300,7 @@ function buildLaneMarkers() {
   ];
 
   dividers.forEach(x => {
-    const geo = new THREE.PlaneGeometry(0.04, 300);
+    const geo = new THREE.PlaneGeometry(0.05, 300);
     const marker = new THREE.Mesh(geo, markerMat.clone());
     marker.rotation.x = -Math.PI / 2;
     marker.position.set(x, 0.03, gridStartZ);
@@ -305,11 +310,11 @@ function buildLaneMarkers() {
 
   // Lane center indicators — subtle dots
   LANES.forEach(x => {
-    const dotGeo = new THREE.CircleGeometry(0.08, 12);
+    const dotGeo = new THREE.CircleGeometry(0.1, 12);
     const dotMat = new THREE.MeshBasicMaterial({
-      color: 0x2dd4bf,
+      color: 0x00ffcc,
       transparent: true,
-      opacity: 0.12,
+      opacity: 0.15,
     });
     // Place a series of dots down the lane
     for (let z = -5; z > -80; z -= 8) {
@@ -356,21 +361,19 @@ function buildPlayer() {
 
 function buildStars() {
   const geo = new THREE.BufferGeometry();
-  const n = 700;
+  const n = 1000;
   const pos = new Float32Array(n * 3);
-  const sizes = new Float32Array(n);
   for (let i = 0; i < n; i++) {
-    pos[i * 3]     = (Math.random() - 0.5) * 250;
-    pos[i * 3 + 1] = Math.random() * 70 + 5;
-    pos[i * 3 + 2] = (Math.random() - 0.5) * 350 - 80;
-    sizes[i] = Math.random() * 0.4 + 0.2;
+    pos[i * 3]     = (Math.random() - 0.5) * 300;
+    pos[i * 3 + 1] = Math.random() * 80 + 5;
+    pos[i * 3 + 2] = (Math.random() - 0.5) * 400 - 80;
   }
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   const mat = new THREE.PointsMaterial({
-    color: 0xaae8f0,
-    size: 0.5,
+    color: 0x44ddff,
+    size: 0.4,
     transparent: true,
-    opacity: 0.7,
+    opacity: 0.8,
     sizeAttenuation: true,
   });
   starField = new THREE.Points(geo, mat);
@@ -382,29 +385,29 @@ function buildTrail() {
   const positions = new Float32Array(TRAIL_LENGTH * 3);
   geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   const mat = new THREE.LineBasicMaterial({
-    color: 0x2dd4bf,
+    color: 0x00ffcc,
     transparent: true,
-    opacity: 0.35,
+    opacity: 0.4,
   });
   trailLine = new THREE.Line(geo, mat);
   scene.add(trailLine);
 }
 
 function buildSpeedLines() {
-  for (let i = 0; i < 24; i++) {
+  for (let i = 0; i < 30; i++) {
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(6);
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     const mat = new THREE.LineBasicMaterial({
-      color: 0x5ee8d6,
+      color: 0x00ffcc,
       transparent: true,
       opacity: 0,
     });
     const line = new THREE.Line(geo, mat);
     line.position.set(
-      (Math.random() - 0.5) * 10,
-      Math.random() * 3 + 0.5,
-      -Math.random() * 60 - 10
+      (Math.random() - 0.5) * 12,
+      Math.random() * 4 + 0.5,
+      -Math.random() * 70 - 10
     );
     line.visible = false;
     scene.add(line);
@@ -413,10 +416,10 @@ function buildSpeedLines() {
 }
 
 function buildParallax() {
-  const colors = [0x0d4a55, 0x083540, 0x05242c];
+  const colors = [0x081828, 0x060e18, 0x040a10];
   const speeds = [0.3, 0.6, 1.0];
-  const heights = [10, 6, 3.5];
-  const widths = [140, 100, 60];
+  const heights = [12, 7, 4];
+  const widths = [160, 120, 70];
 
   for (let i = 0; i < 3; i++) {
     // Background wall
@@ -424,32 +427,32 @@ function buildParallax() {
     const mat = new THREE.MeshBasicMaterial({
       color: colors[i],
       transparent: true,
-      opacity: 0.5 - i * 0.12,
+      opacity: 0.6 - i * 0.12,
       side: THREE.DoubleSide,
     });
     const layer = new THREE.Mesh(geo, mat);
-    layer.position.set(0, heights[i] / 2, -110 - i * 35);
+    layer.position.set(0, heights[i] / 2, -120 - i * 40);
     layer.userData.speed = speeds[i];
     layer.userData.baseZ = layer.position.z;
     scene.add(layer);
     bgLayers.push(layer);
 
-    // Background structures (pillars / spires)
-    for (let j = 0; j < 6; j++) {
-      const isSpire = Math.random() < 0.5;
-      const bWidth = isSpire ? 0.3 + Math.random() * 0.5 : 1.5 + Math.random() * 2.5;
-      const bHeight = 2 + Math.random() * 6;
+    // Background structures — taller, more varied
+    for (let j = 0; j < 8; j++) {
+      const isSpire = Math.random() < 0.4;
+      const bWidth = isSpire ? 0.2 + Math.random() * 0.4 : 1.2 + Math.random() * 3.0;
+      const bHeight = 3 + Math.random() * 10;
       const bGeo = new THREE.BoxGeometry(bWidth, bHeight, 0.5);
       const bMat = new THREE.MeshBasicMaterial({
         color: colors[i],
         transparent: true,
-        opacity: 0.3,
+        opacity: 0.35,
       });
       const building = new THREE.Mesh(bGeo, bMat);
       building.position.set(
-        (j - 2.5) * 14 + (Math.random() - 0.5) * 10,
+        (j - 3.5) * 12 + (Math.random() - 0.5) * 8,
         bHeight / 2,
-        -110 - i * 35
+        -120 - i * 40
       );
       building.userData.speed = speeds[i];
       building.userData.baseZ = building.position.z;
@@ -460,7 +463,7 @@ function buildParallax() {
 }
 
 function buildFlashOverlay() {
-  const geo = new THREE.PlaneGeometry(24, 14);
+  const geo = new THREE.PlaneGeometry(28, 16);
   const mat = new THREE.MeshBasicMaterial({
     color: 0xffffff,
     transparent: true,
@@ -469,7 +472,7 @@ function buildFlashOverlay() {
     depthTest: false,
   });
   flashOverlay = new THREE.Mesh(geo, mat);
-  flashOverlay.position.set(0, 3.6, 5.5);
+  flashOverlay.position.set(0, 3.8, 5.5);
   flashOverlay.renderOrder = 999;
   scene.add(flashOverlay);
 }
@@ -601,7 +604,7 @@ function applyTheme(themeId) {
 
   // Update player if using default color
   const char = CHARACTERS[state.character];
-  if (char && char.color === 0x2dd4bf) {
+  if (char && char.color === 0x00ffcc) {
     playerMat.color.set(t.player);
     playerMat.emissive.set(t.player);
   }
@@ -949,34 +952,36 @@ function updateCoins(dt, dz, px, py, pz) {
 
   for (let i = coins.length - 1; i >= 0; i--) {
     const c = coins[i];
-    const prevZ = c.position.z;
     c.position.z += dz;
     c.rotation.y += dt * 3;
 
-    // Collection check — when coin crosses player Z
-    if (prevZ < pz && c.position.z >= pz) {
-      if (Math.abs(c.position.x - px) < 0.85 && Math.abs(c.position.y - py) < 0.9) {
-        spawnParticleBurst(c.position.x, c.position.y, c.position.z, coinMat.color.getHex(), 12, scene);
-        sfxCoin();
+    // Distance-based collection — works regardless of frame speed
+    const dx = Math.abs(c.position.x - px);
+    const dy = Math.abs(c.position.y - py);
+    const dz2 = Math.abs(c.position.z - pz);
+    const collectionDist = 1.0;
 
-        // Score fly-up
-        const vec = new THREE.Vector3(c.position.x, c.position.y, c.position.z);
-        vec.project(camera);
-        const sx = (vec.x * 0.5 + 0.5) * window.innerWidth;
-        const sy = (-vec.y * 0.5 + 0.5) * window.innerHeight;
-        const pts = Math.floor(10 * state.multiplier);
-        showScoreFly(sx, sy, '+' + pts);
+    if (dx < collectionDist && dy < collectionDist && dz2 < collectionDist) {
+      spawnParticleBurst(c.position.x, c.position.y, c.position.z, coinMat.color.getHex(), 12, scene);
+      sfxCoin();
 
-        c.visible = false;
-        coins.splice(i, 1);
-        addCoins(1);
-        state.combo++;
-        if (state.combo >= 5) sfxCombo();
-        state.multiplier = 1 + Math.floor(state.combo / 5) * 0.5;
-        state.score += 10 * state.multiplier * currentMode.scoreMultiplier;
-        updateHUD();
-        continue;
-      }
+      // Score fly-up
+      const vec = new THREE.Vector3(c.position.x, c.position.y, c.position.z);
+      vec.project(camera);
+      const sx = (vec.x * 0.5 + 0.5) * window.innerWidth;
+      const sy = (-vec.y * 0.5 + 0.5) * window.innerHeight;
+      const pts = Math.floor(10 * state.multiplier);
+      showScoreFly(sx, sy, '+' + pts);
+
+      c.visible = false;
+      coins.splice(i, 1);
+      addCoins(1);
+      state.combo++;
+      if (state.combo >= 5) sfxCombo();
+      state.multiplier = 1 + Math.floor(state.combo / 5) * 0.5;
+      state.score += 10 * state.multiplier * currentMode.scoreMultiplier;
+      updateHUD();
+      continue;
     }
 
     // Despawn — reset combo if coins pass without collection
@@ -1265,14 +1270,18 @@ function setupInput() {
     const elapsed = Date.now() - touchStartT;
     const absX = Math.abs(dx), absY = Math.abs(dy);
 
-    if (absX < 24 && absY < 24 && elapsed < 250) {
+    // Sensitivity scales the swipe threshold: high sens = small swipe needed
+    const swipeThreshold = 60 - (touchSensitivity * 4); // range: 56 (sens 1) to 20 (sens 10)
+    const tapThreshold = 24;
+
+    if (absX < tapThreshold && absY < tapThreshold && elapsed < 250) {
       // Tap — jump
       if (!isJumping) { velocityY = JUMP_FORCE; isJumping = true; sfxJump(); flashMobileIndicator('mi-jump'); }
-    } else if (absX > absY) {
+    } else if (absX > absY && absX > swipeThreshold) {
       // Horizontal swipe
       if (dx > 0) { currentLane = Math.min(2, currentLane + 1); flashMobileIndicator('mi-right'); }
       else { currentLane = Math.max(0, currentLane - 1); flashMobileIndicator('mi-left'); }
-    } else if (dy < 0) {
+    } else if (dy < 0 && absY > swipeThreshold) {
       // Swipe up — jump
       if (!isJumping) { velocityY = JUMP_FORCE; isJumping = true; sfxJump(); flashMobileIndicator('mi-jump'); }
     }
@@ -1297,7 +1306,7 @@ function setupUI() {
   // HUD buttons
   document.getElementById('pause-btn').addEventListener('click', togglePause);
   document.getElementById('settings-btn').addEventListener('click', () => {
-    document.getElementById('analytics-display').innerHTML = getAnalyticsHTML();
+    renderAnalytics(document.getElementById('analytics-display'));
     showScreen('settings-screen');
   });
 
@@ -1329,6 +1338,7 @@ function setupUI() {
   });
   sens.addEventListener('input', () => {
     document.getElementById('sensitivity-val').textContent = sens.value;
+    touchSensitivity = Number(sens.value);
     try { localStorage.setItem('neonRunnerSensitivity', sens.value); } catch (e) {}
   });
 
@@ -1339,7 +1349,7 @@ function setupUI() {
     const savedSens = localStorage.getItem('neonRunnerSensitivity');
     if (savedMusic !== null) { musicVol.value = savedMusic; document.getElementById('music-volume-val').textContent = savedMusic + '%'; setMusicVolume(savedMusic); }
     if (savedSfx !== null) { sfxVol.value = savedSfx; document.getElementById('sfx-volume-val').textContent = savedSfx + '%'; setSfxVolume(savedSfx); }
-    if (savedSens !== null) { sens.value = savedSens; document.getElementById('sensitivity-val').textContent = savedSens; }
+    if (savedSens !== null) { sens.value = savedSens; document.getElementById('sensitivity-val').textContent = savedSens; touchSensitivity = Number(savedSens); }
   } catch (e) {}
 
   // Build selectors
@@ -1348,11 +1358,11 @@ function setupUI() {
   buildThemeSelector();
 
   // Stats
-  document.getElementById('menu-best').textContent = '🏆 Best: ' + state.best;
-  document.getElementById('menu-daily').textContent = '📅 Daily: ' + state.dailyBest;
-  document.getElementById('menu-games').textContent = '🎮 Games: ' + state.gamesPlayed;
-  document.getElementById('menu-coins').textContent = '💰 Coins: ' + state.coins;
-  document.getElementById('menu-streak').textContent = '🔥 Streak: ' + state.streak;
+  document.getElementById('menu-best').textContent = '◆ Best: ' + state.best;
+  document.getElementById('menu-daily').textContent = '◈ Daily: ' + state.dailyBest;
+  document.getElementById('menu-games').textContent = '◇ Games: ' + state.gamesPlayed;
+  document.getElementById('menu-coins').textContent = '⬡ Coins: ' + state.coins;
+  document.getElementById('menu-streak').textContent = '⬥ Streak: ' + state.streak;
 
   // Daily challenges
   generateDailyChallenges();
@@ -1461,7 +1471,11 @@ function buildThemeSelector() {
 // ── SCREEN MANAGEMENT ────────────────────────────────────────
 
 function showScreen(id) {
+  // Guard against re-entrant calls during transition
+  if (isTransitioning) return;
+
   if (showScreenTimeout) clearTimeout(showScreenTimeout);
+  isTransitioning = true;
   const transition = document.getElementById('screen-transition');
   transition.classList.add('active');
 
@@ -1473,6 +1487,7 @@ function showScreen(id) {
     if (id) document.getElementById(id).classList.remove('hidden');
     transition.classList.remove('active');
     showScreenTimeout = null;
+    isTransitioning = false;
   }, 200);
 }
 
@@ -1551,14 +1566,15 @@ function endGame() {
   deathAnimTime = 0;
   player.visible = true;
 
-  triggerShake(0.8, 0.6);
-  triggerFlash(0xff0000, 0.4, 250);
+  triggerShake(1.0, 0.7);
+  triggerFlash(0xff0044, 0.5, 300);
 
-  // Death particle cascade
-  spawnParticleBurst(player.position.x, player.position.y, player.position.z, 0xf5a623, 10, scene);
-  setTimeout(() => spawnParticleBurst(player.position.x + 0.5, player.position.y + 0.3, player.position.z, 0xff6b35, 8, scene), 80);
-  setTimeout(() => spawnParticleBurst(player.position.x - 0.5, player.position.y, player.position.z + 0.5, 0xd946a8, 8, scene), 160);
-  setTimeout(() => spawnParticleBurst(player.position.x, player.position.y + 0.5, player.position.z - 0.3, 0x2dd4bf, 8, scene), 240);
+  // Death particle cascade — more particles, more dramatic
+  spawnParticleBurst(player.position.x, player.position.y, player.position.z, 0xffcc00, 12, scene);
+  setTimeout(() => spawnParticleBurst(player.position.x + 0.5, player.position.y + 0.3, player.position.z, 0xff0066, 10, scene), 80);
+  setTimeout(() => spawnParticleBurst(player.position.x - 0.5, player.position.y, player.position.z + 0.5, 0xff0044, 10, scene), 160);
+  setTimeout(() => spawnParticleBurst(player.position.x, player.position.y + 0.5, player.position.z - 0.3, 0x00ffcc, 10, scene), 240);
+  setTimeout(() => spawnParticleBurst(player.position.x + 0.3, player.position.y - 0.2, player.position.z + 0.3, 0xaa00ff, 8, scene), 320);
 
   stopBGM();
   stopAmbient();
@@ -1659,8 +1675,8 @@ function showMilestone(distance) {
   const el = document.createElement('div');
   el.textContent = distance + 'm!';
   el.style.cssText = 'position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);' +
-    'font-family:Orbitron,monospace;font-size:48px;font-weight:900;color:#2dd4bf;' +
-    'text-shadow:0 0 20px #2dd4bf,0 0 40px #1a8f82;pointer-events:none;z-index:100;' +
+    'font-family:Orbitron,monospace;font-size:52px;font-weight:900;letter-spacing:4px;color:#00ffcc;' +
+    'text-shadow:0 0 20px #00ffcc,0 0 60px #00aa88,0 0 120px #006644;pointer-events:none;z-index:100;' +
     'transition:all 0.8s cubic-bezier(0.22,1,0.36,1);opacity:1;';
   document.body.appendChild(el);
   requestAnimationFrame(() => {
@@ -1673,13 +1689,24 @@ function showMilestone(distance) {
 
 function showAchievementPopup(achievement) {
   const el = document.createElement('div');
-  el.innerHTML = '<div style="font-size:24px">' + achievement.icon + '</div>' +
-    '<div style="font-family:Orbitron,monospace;font-size:14px;font-weight:700;color:#f5a623">' + achievement.name + '</div>' +
-    '<div style="font-size:11px;color:rgba(232,244,242,0.5)">' + achievement.desc + '</div>';
   el.style.cssText = 'position:fixed;bottom:20px;right:20px;background:rgba(8,18,35,0.92);' +
     'border:1px solid rgba(245,166,35,0.3);border-radius:14px;padding:14px 18px;text-align:center;' +
     'z-index:100;transition:all 0.4s cubic-bezier(0.22,1,0.36,1);opacity:0;transform:translateX(100px);' +
     'box-shadow:0 0 20px rgba(245,166,35,0.2);backdrop-filter:blur(12px);';
+
+  const iconEl = document.createElement('div');
+  iconEl.style.fontSize = '24px';
+  iconEl.textContent = achievement.icon;
+
+  const nameEl = document.createElement('div');
+  nameEl.style.cssText = 'font-family:Orbitron,monospace;font-size:14px;font-weight:700;color:#f5a623';
+  nameEl.textContent = achievement.name;
+
+  const descEl = document.createElement('div');
+  descEl.style.cssText = 'font-size:11px;color:rgba(232,244,242,0.5)';
+  descEl.textContent = achievement.desc;
+
+  el.append(iconEl, nameEl, descEl);
   document.body.appendChild(el);
   requestAnimationFrame(() => {
     el.style.opacity = '1';
@@ -1710,9 +1737,20 @@ function renderAchievements() {
     const unlocked = state.unlockedAchievements.includes(a.id);
     const card = document.createElement('div');
     card.className = 'ach-card' + (unlocked ? ' unlocked' : '');
-    card.innerHTML = '<div class="ach-icon">' + a.icon + '</div>' +
-      '<div class="ach-name">' + a.name + '</div>' +
-      '<div class="ach-desc">' + a.desc + '</div>';
+
+    const iconEl = document.createElement('div');
+    iconEl.className = 'ach-icon';
+    iconEl.textContent = a.icon;
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'ach-name';
+    nameEl.textContent = a.name;
+
+    const descEl = document.createElement('div');
+    descEl.className = 'ach-desc';
+    descEl.textContent = a.desc;
+
+    card.append(iconEl, nameEl, descEl);
     list.appendChild(card);
   });
 }
@@ -1741,7 +1779,7 @@ function createMobileIndicators() {
   indicators.id = 'mobile-indicators';
   indicators.innerHTML = `
     <div id="mi-left" class="mi">
-      <span class="mi-icon">◀</span>
+      <span class="mi-icon">◄</span>
       <span class="mi-label">LEFT</span>
     </div>
     <div id="mi-jump" class="mi">
@@ -1749,7 +1787,7 @@ function createMobileIndicators() {
       <span class="mi-label">JUMP</span>
     </div>
     <div id="mi-right" class="mi">
-      <span class="mi-icon">▶</span>
+      <span class="mi-icon">►</span>
       <span class="mi-label">RIGHT</span>
     </div>
   `;
@@ -1757,24 +1795,24 @@ function createMobileIndicators() {
   document.body.appendChild(indicators);
 
   document.querySelectorAll('.mi').forEach(el => {
-    el.style.cssText = 'width:64px;height:64px;border-radius:14px;background:rgba(8,18,35,0.6);' +
-      'border:1px solid rgba(45,212,191,0.15);display:flex;flex-direction:column;align-items:center;' +
-      'justify-content:center;gap:2px;backdrop-filter:blur(8px);transition:all 0.08s ease;';
-    el.querySelector('.mi-icon').style.cssText = 'font-size:18px;color:rgba(45,212,191,0.5);';
-    el.querySelector('.mi-label').style.cssText = 'font-family:Orbitron,monospace;font-size:7px;font-weight:700;letter-spacing:1px;color:rgba(45,212,191,0.3);';
+    el.style.cssText = 'width:64px;height:64px;border-radius:14px;background:rgba(4,10,20,0.7);' +
+      'border:1px solid rgba(0,255,204,0.12);display:flex;flex-direction:column;align-items:center;' +
+      'justify-content:center;gap:2px;backdrop-filter:blur(10px);transition:all 0.08s ease;';
+    el.querySelector('.mi-icon').style.cssText = 'font-size:18px;color:rgba(0,255,204,0.4);';
+    el.querySelector('.mi-label').style.cssText = 'font-family:Orbitron,monospace;font-size:7px;font-weight:700;letter-spacing:1px;color:rgba(0,255,204,0.25);';
   });
 }
 
 function flashMobileIndicator(id) {
   const el = document.getElementById(id);
   if (!el) return;
-  el.style.background = 'rgba(45,212,191,0.25)';
-  el.style.borderColor = 'rgba(45,212,191,0.7)';
+  el.style.background = 'rgba(0,255,204,0.2)';
+  el.style.borderColor = 'rgba(0,255,204,0.6)';
   el.style.transform = 'scale(0.92)';
   if (navigator.vibrate) navigator.vibrate(10);
   setTimeout(() => {
-    el.style.background = 'rgba(8,18,35,0.6)';
-    el.style.borderColor = 'rgba(45,212,191,0.15)';
+    el.style.background = 'rgba(4,10,20,0.7)';
+    el.style.borderColor = 'rgba(0,255,204,0.12)';
     el.style.transform = 'scale(1)';
   }, 100);
 }
@@ -1792,11 +1830,11 @@ function showGestureTutorial() {
       <h3>HOW TO PLAY</h3>
       <div class="tutorial-gestures">
         <div class="gesture">
-          <div class="gesture-icon">👈👉</div>
+          <div class="gesture-icon">◄ ►</div>
           <div class="gesture-text">Swipe Left/Right to switch lanes</div>
         </div>
         <div class="gesture">
-          <div class="gesture-icon">👆</div>
+          <div class="gesture-icon">▲</div>
           <div class="gesture-text">Tap to jump over obstacles</div>
         </div>
       </div>
@@ -1825,7 +1863,7 @@ function captureScreenshot() {
 
 function showShareButton() {
   const btn = document.createElement('button');
-  btn.textContent = '📸 SCREENSHOT';
+  btn.textContent = '◆ SCREENSHOT';
   btn.className = 'btn small share-btn';
   btn.addEventListener('click', () => {
     captureScreenshot();
@@ -1874,18 +1912,36 @@ function updateAnalytics() {
   saveAnalytics(a);
 }
 
-function getAnalyticsHTML() {
+function renderAnalytics(container) {
   const a = loadAnalytics();
   const avg = a.totalGames > 0 ? Math.floor(a.totalScore / a.totalGames) : 0;
   const favLane = a.deathLanes.indexOf(Math.max(...a.deathLanes));
   const laneNames = ['Left', 'Center', 'Right'];
-  return '<div class="stats-panel">' +
-    '<div class="stat-row"><span>Avg Score</span><span>' + avg + '</span></div>' +
-    '<div class="stat-row"><span>Total Games</span><span>' + a.totalGames + '</span></div>' +
-    '<div class="stat-row"><span>Total Coins</span><span>' + a.totalCoins + '</span></div>' +
-    '<div class="stat-row"><span>Best Distance</span><span>' + a.bestDistance + 'm</span></div>' +
-    '<div class="stat-row"><span>Death Lane</span><span>' + laneNames[favLane] + '</span></div>' +
-    '</div>';
+
+  const stats = [
+    ['Avg Score', avg],
+    ['Total Games', a.totalGames],
+    ['Total Coins', a.totalCoins],
+    ['Best Distance', a.bestDistance + 'm'],
+    ['Death Lane', laneNames[favLane]],
+  ];
+
+  const panel = document.createElement('div');
+  panel.className = 'stats-panel';
+
+  stats.forEach(([label, value]) => {
+    const row = document.createElement('div');
+    row.className = 'stat-row';
+    const lbl = document.createElement('span');
+    lbl.textContent = label;
+    const val = document.createElement('span');
+    val.textContent = value;
+    row.append(lbl, val);
+    panel.appendChild(row);
+  });
+
+  container.innerHTML = '';
+  container.appendChild(panel);
 }
 
 // ═══════════════════════════════════════════════════════════════

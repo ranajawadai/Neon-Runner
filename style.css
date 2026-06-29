@@ -5,36 +5,36 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* ── Core Palette ── */
-  --void:         #020408;
-  --abyss:        #060c14;
-  --deep:         #0a1628;
-  --surface:      #0f1f35;
-  --surface-2:    #162a45;
+  /* ── Core Palette (AAA Cyberpunk) ── */
+  --void:         #000000;
+  --abyss:        #020408;
+  --deep:         #040a14;
+  --surface:      #0a1428;
+  --surface-2:    #0f1f3a;
 
-  /* ── Accent Colors ── */
-  --cyan:         #2dd4bf;
-  --cyan-bright:  #5eeeeb;
-  --cyan-dim:     #1a8f82;
-  --cyan-glow:    rgba(45, 212, 191, 0.4);
-  --magenta:      #e844a8;
-  --magenta-glow: rgba(232, 68, 168, 0.35);
-  --amber:        #f5a623;
-  --amber-glow:   rgba(245, 166, 35, 0.4);
-  --red:          #ff3355;
+  /* ── Accent Colors (Neon) ── */
+  --cyan:         #00ffcc;
+  --cyan-bright:  #44ffdd;
+  --cyan-dim:     #00aa88;
+  --cyan-glow:    rgba(0, 255, 204, 0.5);
+  --magenta:      #ff0066;
+  --magenta-glow: rgba(255, 0, 102, 0.45);
+  --amber:        #ffcc00;
+  --amber-glow:   rgba(255, 204, 0, 0.5);
+  --red:          #ff0044;
   --green:        #00ff88;
 
   /* ── Text ── */
-  --text-primary:   #e8f4f2;
-  --text-secondary: rgba(232, 244, 242, 0.55);
-  --text-muted:     rgba(232, 244, 242, 0.25);
+  --text-primary:   #eafff8;
+  --text-secondary: rgba(234, 255, 248, 0.5);
+  --text-muted:     rgba(234, 255, 248, 0.2);
   --text-accent:    var(--cyan);
 
   /* ── Glass ── */
-  --glass-bg:       rgba(8, 18, 35, 0.75);
-  --glass-border:   rgba(45, 212, 191, 0.12);
-  --glass-hover:    rgba(45, 212, 191, 0.08);
-  --glass-blur:     16px;
+  --glass-bg:       rgba(4, 10, 20, 0.8);
+  --glass-border:   rgba(0, 255, 204, 0.1);
+  --glass-hover:    rgba(0, 255, 204, 0.06);
+  --glass-blur:     20px;
 
   /* ── Spacing ── */
   --radius-sm:    8px;
@@ -125,9 +125,9 @@ body {
 .hud-value {
   font-family: 'Orbitron', monospace;
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--cyan);
-  text-shadow: 0 0 12px var(--cyan-glow);
+  text-shadow: 0 0 15px var(--cyan-glow), 0 0 40px rgba(0, 255, 204, 0.2);
   line-height: 1.1;
 }
 
@@ -139,8 +139,8 @@ body {
 }
 
 .hud-btn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   background: var(--glass-bg);
@@ -197,9 +197,9 @@ body {
   align-items: center;
   justify-content: center;
   background: linear-gradient(180deg,
-    rgba(2, 4, 8, 0.92) 0%,
-    rgba(6, 12, 20, 0.96) 40%,
-    rgba(10, 22, 40, 0.94) 100%
+    rgba(0, 0, 0, 0.95) 0%,
+    rgba(2, 4, 8, 0.97) 40%,
+    rgba(4, 10, 20, 0.96) 100%
   );
   z-index: 20;
   overflow: hidden;
@@ -229,13 +229,14 @@ body {
 .title {
   font-family: 'Orbitron', monospace;
   font-size: 62px;
-  font-weight: 800;
-  letter-spacing: 4px;
+  font-weight: 900;
+  letter-spacing: 6px;
   color: var(--cyan);
   text-shadow:
     0 0 20px var(--cyan-glow),
-    0 0 60px rgba(45, 212, 191, 0.15),
-    0 2px 4px rgba(0, 0, 0, 0.5);
+    0 0 60px rgba(0, 255, 204, 0.2),
+    0 0 120px rgba(0, 255, 204, 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.8);
   margin-bottom: 6px;
   position: relative;
   z-index: 1;
@@ -245,16 +246,17 @@ body {
   color: var(--magenta);
   text-shadow:
     0 0 20px var(--magenta-glow),
-    0 0 50px rgba(232, 68, 168, 0.12);
+    0 0 60px rgba(255, 0, 102, 0.15),
+    0 0 120px rgba(255, 0, 102, 0.06);
 }
 
 .title.small {
   font-size: 36px;
-  letter-spacing: 3px;
+  letter-spacing: 4px;
   color: var(--amber);
   text-shadow:
     0 0 16px var(--amber-glow),
-    0 0 40px rgba(245, 166, 35, 0.1);
+    0 0 50px rgba(255, 204, 0, 0.12);
 }
 
 .subtitle {
@@ -272,21 +274,22 @@ body {
 .btn {
   position: relative;
   overflow: hidden;
-  padding: 14px 48px;
+  padding: 16px 52px;
   font-family: 'Orbitron', monospace;
   font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  color: var(--void);
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: #000;
   background: linear-gradient(135deg, var(--cyan) 0%, var(--cyan-bright) 100%);
   border: none;
   border-radius: var(--radius-pill);
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow:
-    0 0 20px var(--cyan-glow),
-    0 4px 15px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    0 0 25px var(--cyan-glow),
+    0 0 60px rgba(0, 255, 204, 0.15),
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   z-index: 1;
 }
 
@@ -408,7 +411,7 @@ body {
 
 .mode-btn.active {
   border-color: var(--cyan);
-  box-shadow: 0 0 15px var(--cyan-glow), inset 0 0 20px rgba(45, 212, 191, 0.05);
+  box-shadow: 0 0 20px var(--cyan-glow), 0 0 50px rgba(0, 255, 204, 0.1), inset 0 0 20px rgba(0, 255, 204, 0.05);
 }
 
 .mode-btn.active::after { transform: scaleX(1); }
@@ -460,8 +463,8 @@ body {
 }
 
 .selector-btn {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 2px solid rgba(232, 244, 242, 0.08);
   cursor: pointer;
@@ -806,8 +809,8 @@ body {
 .near-miss-flash {
   position: fixed;
   inset: 0;
-  border: 3px solid rgba(45, 212, 191, 0.5);
-  box-shadow: inset 0 0 80px rgba(45, 212, 191, 0.15);
+  border: 3px solid rgba(0, 255, 204, 0.6);
+  box-shadow: inset 0 0 100px rgba(0, 255, 204, 0.2), inset 0 0 200px rgba(0, 255, 204, 0.05);
   pointer-events: none;
   z-index: 15;
   opacity: 0;
@@ -844,17 +847,17 @@ body {
 .powerup-badge.active { opacity: 1; }
 
 .powerup-badge.shield {
-  background: rgba(0, 255, 136, 0.12);
-  border: 1px solid rgba(0, 255, 136, 0.4);
+  background: rgba(0, 255, 136, 0.15);
+  border: 1px solid rgba(0, 255, 136, 0.5);
   color: var(--green);
-  box-shadow: 0 0 12px rgba(0, 255, 136, 0.2);
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.3), 0 0 40px rgba(0, 255, 136, 0.1);
 }
 
 .powerup-badge.magnet {
-  background: rgba(232, 68, 168, 0.12);
-  border: 1px solid rgba(232, 68, 168, 0.4);
+  background: rgba(255, 0, 102, 0.15);
+  border: 1px solid rgba(255, 0, 102, 0.5);
   color: var(--magenta);
-  box-shadow: 0 0 12px var(--magenta-glow);
+  box-shadow: 0 0 15px var(--magenta-glow), 0 0 40px rgba(255, 0, 102, 0.1);
 }
 
 .powerup-badge .timer {
@@ -867,10 +870,10 @@ body {
 .score-fly {
   position: fixed;
   font-family: 'Orbitron', monospace;
-  font-size: 20px;
-  font-weight: 800;
+  font-size: 22px;
+  font-weight: 900;
   color: var(--amber);
-  text-shadow: 0 0 10px var(--amber-glow), 0 2px 4px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 0 15px var(--amber-glow), 0 0 40px rgba(255, 204, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.8);
   pointer-events: none;
   z-index: 25;
   animation: scoreFly 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
@@ -900,11 +903,11 @@ body {
 
 /* ── Combo Pulse ── */
 .combo-pulse {
-  animation: comboPulse 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: comboPulse 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes comboPulse {
-  0%   { transform: scale(1.4); color: var(--amber); }
+  0%   { transform: scale(1.6); color: var(--amber); text-shadow: 0 0 20px var(--amber-glow); }
   100% { transform: scale(1); }
 }
 
@@ -912,7 +915,7 @@ body {
 .tier-up-flash {
   position: fixed;
   inset: 0;
-  background: radial-gradient(circle at center, rgba(45, 212, 191, 0.2) 0%, transparent 65%);
+  background: radial-gradient(circle at center, rgba(0, 255, 204, 0.25) 0%, transparent 60%);
   pointer-events: none;
   z-index: 15;
   opacity: 0;
@@ -948,9 +951,10 @@ body {
 #difficulty-tier {
   font-family: 'Orbitron', monospace;
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
+  font-weight: 800;
+  letter-spacing: 2px;
   transition: color 0.3s;
+  text-shadow: 0 0 10px currentColor;
 }
 
 .tier-badge {
@@ -987,9 +991,9 @@ body {
 }
 
 .loading-bar-container {
-  width: min(220px, 60vw);
-  height: 3px;
-  background: rgba(45, 212, 191, 0.08);
+  width: min(240px, 60vw);
+  height: 4px;
+  background: rgba(0, 255, 204, 0.06);
   border-radius: 2px;
   overflow: hidden;
   margin: 12px auto;
@@ -999,10 +1003,11 @@ body {
   position: relative;
   overflow: hidden;
   height: 100%;
-  background: linear-gradient(90deg, var(--cyan-dim), var(--cyan));
+  background: linear-gradient(90deg, var(--cyan-dim), var(--cyan), var(--cyan-bright));
   width: 0%;
   transition: width 0.3s;
   border-radius: 2px;
+  box-shadow: 0 0 10px var(--cyan-glow);
 }
 
 .loading-bar::after {
@@ -1118,8 +1123,8 @@ body {
   }
 
   .hud-btn {
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
   }
 
   .mode-btn {
@@ -1163,7 +1168,7 @@ body {
   .mode-icon { font-size: 18px; }
   .mode-name { font-size: 8px; }
 
-  .selector-btn { width: 38px; height: 38px; }
+  .selector-btn { width: 44px; height: 44px; }
 
   .stat-chip { font-size: 10px; padding: 3px 8px; }
 

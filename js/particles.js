@@ -41,16 +41,16 @@ export function spawnParticleBurst(x, y, z, color, count, scene) {
 
 export function initWeather(scene) {
   for (let i = 0; i < MAX_WEATHER; i++) {
-    const geo = new THREE.SphereGeometry(0.025, 4, 4);
-    const mat = new THREE.MeshBasicMaterial({ color: 0x6fd9cb, transparent: true, opacity: 0.45 });
+    const geo = new THREE.SphereGeometry(0.03, 4, 4);
+    const mat = new THREE.MeshBasicMaterial({ color: 0x00ffcc, transparent: true, opacity: 0.5 });
     const p = new THREE.Mesh(geo, mat);
     p.position.set(
-      (Math.random() - 0.5) * 20,
-      Math.random() * 8 + 1,
-      (Math.random() - 0.5) * 40 - 20
+      (Math.random() - 0.5) * 24,
+      Math.random() * 10 + 1,
+      (Math.random() - 0.5) * 50 - 20
     );
-    p.userData.vy = -0.15 - Math.random() * 0.2;
-    p.userData.vx = (Math.random() - 0.5) * 0.3;
+    p.userData.vy = -0.12 - Math.random() * 0.18;
+    p.userData.vx = (Math.random() - 0.5) * 0.25;
     p.visible = true;
     scene.add(p);
     weatherParticles.push(p);

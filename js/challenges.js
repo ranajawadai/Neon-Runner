@@ -68,8 +68,21 @@ export function checkDailyChallenges() {
 
 function showChallengeComplete(rewards) {
   const el = document.createElement('div');
-  el.innerHTML = '<div style="font-size:24px">🎯</div><div style="font-size:16px;font-weight:bold;color:#2dd4bf">Challenge Complete!</div><div style="font-size:14px;color:#f5a623">+' + rewards + ' coins</div>';
-  el.style.cssText = 'position:fixed;top:20px;right:20px;background:rgba(3,6,11,0.96);border:2px solid #2dd4bf;border-radius:12px;padding:16px 20px;text-align:center;z-index:100;transition:all 0.5s ease-out;opacity:0;transform:translateX(100px);box-shadow:0 0 20px rgba(45,212,191,0.3);';
+  el.style.cssText = 'position:fixed;top:20px;right:20px;background:rgba(2,4,8,0.96);border:2px solid #00ffcc;border-radius:12px;padding:16px 20px;text-align:center;z-index:100;transition:all 0.5s ease-out;opacity:0;transform:translateX(100px);box-shadow:0 0 25px rgba(0,255,204,0.3);';
+
+  const iconEl = document.createElement('div');
+  iconEl.style.fontSize = '24px';
+  iconEl.textContent = '🎯';
+
+  const titleEl = document.createElement('div');
+  titleEl.style.cssText = 'font-size:16px;font-weight:bold;color:#00ffcc';
+  titleEl.textContent = 'Challenge Complete!';
+
+  const rewardEl = document.createElement('div');
+  rewardEl.style.cssText = 'font-size:14px;color:#ffcc00';
+  rewardEl.textContent = '+' + rewards + ' coins';
+
+  el.append(iconEl, titleEl, rewardEl);
   document.body.appendChild(el);
   requestAnimationFrame(() => {
     el.style.opacity = '1';
@@ -87,19 +100,34 @@ export function renderDailyChallenges() {
   const list = document.getElementById('challenge-list');
   if (!list) return;
   list.innerHTML = '';
-  
+
   dailyChallenges.forEach(c => {
     const completed = dailyChallengeProgress[c.id];
     const item = document.createElement('div');
     item.className = 'challenge-item' + (completed ? ' completed' : '');
-    item.innerHTML = `
-      <div class="challenge-info">
-        <div class="challenge-name">${c.name}</div>
-        <div class="challenge-desc">${c.desc}</div>
-      </div>
-      <div class="challenge-reward">+${c.reward} 💰</div>
-      <div class="challenge-check">✓</div>
-    `;
+
+    const info = document.createElement('div');
+    info.className = 'challenge-info';
+
+    const name = document.createElement('div');
+    name.className = 'challenge-name';
+    name.textContent = c.name;
+
+    const desc = document.createElement('div');
+    desc.className = 'challenge-desc';
+    desc.textContent = c.desc;
+
+    info.append(name, desc);
+
+    const reward = document.createElement('div');
+    reward.className = 'challenge-reward';
+    reward.textContent = '+' + c.reward + ' 💰';
+
+    const check = document.createElement('div');
+    check.className = 'challenge-check';
+    check.textContent = '✓';
+
+    item.append(info, reward, check);
     list.appendChild(item);
   });
 }

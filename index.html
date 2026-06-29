@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Neon Runner — 3D Endless Runner</title>
   <meta name="description" content="Dodge obstacles, collect glowing plankton, survive the depths. A bioluminescent 3D endless runner built with Three.js." />
-  <meta name="theme-color" content="#020408" />
+  <meta name="theme-color" content="#000000" />
 
   <meta property="og:title" content="Neon Runner" />
   <meta property="og:description" content="Dive into the deep. Dodge. Collect. Survive." />
@@ -15,7 +15,7 @@
   <meta name="twitter:description" content="Dive into the deep. Dodge. Collect. Survive." />
 
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐠</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◆</text></svg>" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -52,11 +52,11 @@
         </div>
         <div class="hud-item">
           <span class="hud-label">COMBO</span>
-          <span id="combo" class="hud-value" style="color:#f5a623;text-shadow:0 0 10px rgba(245,166,35,0.4);">0</span>
+          <span id="combo" class="hud-value" style="color:#ffcc00;text-shadow:0 0 15px rgba(255,204,0,0.5);">0</span>
         </div>
         <div class="hud-item">
           <span class="hud-label">LEVEL</span>
-          <span id="difficulty-tier" class="hud-value" style="color:#2dd4bf;">BEGINNER</span>
+          <span id="difficulty-tier" class="hud-value" style="color:#00ffcc;">BEGINNER</span>
         </div>
       </div>
       <div class="hud-right">
@@ -93,11 +93,11 @@
         </div>
 
         <div class="stats-row">
-          <span id="menu-best" class="stat-chip">🏆 Best: 0</span>
-          <span id="menu-daily" class="stat-chip">📅 Daily: 0</span>
-          <span id="menu-games" class="stat-chip">🎮 Games: 0</span>
-          <span id="menu-coins" class="stat-chip">💰 Coins: 0</span>
-          <span id="menu-streak" class="stat-chip">🔥 Streak: 0</span>
+          <span id="menu-best" class="stat-chip">◆ Best: 0</span>
+          <span id="menu-daily" class="stat-chip">◈ Daily: 0</span>
+          <span id="menu-games" class="stat-chip">◇ Games: 0</span>
+          <span id="menu-coins" class="stat-chip">⬡ Coins: 0</span>
+          <span id="menu-streak" class="stat-chip">⬥ Streak: 0</span>
         </div>
 
         <div id="daily-challenges" class="daily-challenges">
@@ -189,13 +189,13 @@
       location.reload();
     });
   </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" onerror="__onAssetError()"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js" onerror="__onAssetError()"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js" onerror="__onAssetError()"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js" onerror="__onAssetError()"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js" onerror="__onAssetError()"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js" onerror="__onAssetError()"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js" onerror="__onAssetError()"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" integrity="sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu" crossorigin="anonymous" onerror="__onAssetError()"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js" integrity="sha384-GkidzTYmQg24v13sa3xhBBbvOLbVLO1QxfyKLdOWweQqNqS/iWwUst2T1fER2Xrg" crossorigin="anonymous" onerror="__onAssetError()"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js" integrity="sha384-2EpLreWSFuZsk4hcSplXLhlHd/wzvDNF907bTGIXSXM0SlhJNzy4YK0DhBFvkFEs" crossorigin="anonymous" onerror="__onAssetError()"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js" integrity="sha384-aVQ2QnWkoxhOefDB0YZB64OPVzujvccydpcC7UqMDJUK0ChwA382zOHmrWHGDRRa" crossorigin="anonymous" onerror="__onAssetError()"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js" integrity="sha384-mY+ii969jnDCI2HjRHftH2NZVkIO5ZGUkcnGCg3oVJ3kVstWQXwerYWBg+nbUG4R" crossorigin="anonymous" onerror="__onAssetError()"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js" integrity="sha384-nhO9toQuMo5osCuA0l+YFpSqscZWxDu251Bnho2gD3kSPv1neEwHg0LyEmrA+mPj" crossorigin="anonymous" onerror="__onAssetError()"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js" integrity="sha384-I3lsvPeDJYFrEAzn/TA0yhc/SCYKwpyfyq8lKzHYKohu43H9f7xc/Q9ZWgSVUDl3" crossorigin="anonymous" onerror="__onAssetError()"></script>
   <script type="module" src="js/main.js" onerror="__onAssetError()"></script>
 </body>
 </html>

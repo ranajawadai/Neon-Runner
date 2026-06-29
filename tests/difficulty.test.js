@@ -38,12 +38,12 @@ describe('Difficulty', () => {
   });
 
   describe('getTierColor', () => {
-    it('should return bio-cyan for first tier', () => {
-      expect(getTierColor(DIFFICULTY_TIERS[0])).toBe('#2dd4bf');
+    it('should return neon cyan for first tier', () => {
+      expect(getTierColor(DIFFICULTY_TIERS[0])).toBe('#00ffcc');
     });
 
-    it('should return magenta for last tier', () => {
-      expect(getTierColor(DIFFICULTY_TIERS[DIFFICULTY_TIERS.length - 1])).toBe('#d946a8');
+    it('should return neon magenta for last tier', () => {
+      expect(getTierColor(DIFFICULTY_TIERS[DIFFICULTY_TIERS.length - 1])).toBe('#ff0066');
     });
   });
 });
