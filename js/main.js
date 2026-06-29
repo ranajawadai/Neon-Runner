@@ -147,8 +147,8 @@ function init() {
 
 function setupScene() {
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0a0a1a);
-  scene.fog = new THREE.FogExp2(0x0a0a1a, 0.002);
+  scene.background = new THREE.Color(0x080810);
+  scene.fog = new THREE.FogExp2(0x080810, 0.001);
 }
 
 function setupCamera() {
@@ -412,39 +412,24 @@ function buildSpeedLines() {
 }
 
 function buildParallax() {
-  const colors = [0x0a0a1a, 0x080818, 0x060614];
-  const speeds = [0.2, 0.4, 0.7];
-  const heights = [15, 10, 6];
-  const widths = [200, 160, 100];
+  // Small distant buildings — very far back, subtle
+  const colors = [0x0a0a14, 0x080810, 0x060610];
+  const speeds = [0.1, 0.2, 0.3];
 
   for (let i = 0; i < 3; i++) {
-    // Background wall — large
-    const geo = new THREE.PlaneGeometry(widths[i], heights[i]);
-    const mat = new THREE.MeshBasicMaterial({
-      color: colors[i],
-      side: THREE.DoubleSide,
-    });
-    const layer = new THREE.Mesh(geo, mat);
-    layer.position.set(0, heights[i] / 2, -150 - i * 50);
-    layer.userData.speed = speeds[i];
-    layer.userData.baseZ = layer.position.z;
-    scene.add(layer);
-    bgLayers.push(layer);
-
-    // Background structures
-    for (let j = 0; j < 10; j++) {
-      const isSpire = Math.random() < 0.3;
-      const bWidth = isSpire ? 0.3 + Math.random() * 0.5 : 1.5 + Math.random() * 4.0;
-      const bHeight = 4 + Math.random() * 12;
-      const bGeo = new THREE.BoxGeometry(bWidth, bHeight, 1);
+    // Small buildings far in background
+    for (let j = 0; j < 6; j++) {
+      const bWidth = 0.5 + Math.random() * 2.0;
+      const bHeight = 2 + Math.random() * 5;
+      const bGeo = new THREE.BoxGeometry(bWidth, bHeight, 0.5);
       const bMat = new THREE.MeshBasicMaterial({
         color: colors[i],
       });
       const building = new THREE.Mesh(bGeo, bMat);
       building.position.set(
-        (j - 4.5) * 14 + (Math.random() - 0.5) * 10,
+        (j - 2.5) * 20 + (Math.random() - 0.5) * 15,
         bHeight / 2,
-        -150 - i * 50
+        -200 - i * 80
       );
       building.userData.speed = speeds[i];
       building.userData.baseZ = building.position.z;
