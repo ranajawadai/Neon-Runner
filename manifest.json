@@ -1,15 +1,15 @@
 {
   "name": "Neon Runner",
   "short_name": "NeonRunner",
-  "description": "Bioluminescent 3D endless runner. Dodge obstacles, collect glowing plankton, survive the depths.",
-  "start_url": "/index.html",
+  "description": "3D endless runner. Dodge obstacles, collect coins, survive.",
+  "start_url": "./index.html",
   "display": "fullscreen",
   "orientation": "any",
-  "background_color": "#03060b",
-  "theme_color": "#03060b",
+  "background_color": "#080810",
+  "theme_color": "#080810",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2303060b' width='100' height='100' rx='20'/><text x='50' y='68' font-size='50' text-anchor='middle'>🐠</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23080810' width='100' height='100' rx='20'/><text x='50' y='70' font-size='50' text-anchor='middle' fill='%2300ffcc'>◆</text></svg>",
       "sizes": "any",
       "type": "image/svg+xml"
     }
