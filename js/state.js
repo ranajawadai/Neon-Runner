@@ -2,6 +2,12 @@
 
 import { getTodayDate } from './utils.js';
 
+/**
+ * Safely get a value from localStorage with fallback.
+ * @param {string} key - Storage key
+ * @param {*} fallback - Default value if key missing or error
+ * @returns {*}
+ */
 function safeGet(key, fallback) {
   try {
     const v = localStorage.getItem(key);
@@ -11,13 +17,43 @@ function safeGet(key, fallback) {
   }
 }
 
+/**
+ * Safely set a value in localStorage.
+ * @param {string} key - Storage key
+ * @param {*} value - Value to store
+ */
 function safeSet(key, value) {
   try {
     localStorage.setItem(key, value);
   } catch (e) {
-    // localStorage unavailable (e.g. private browsing) - state will not persist this session
+    // localStorage unavailable (e.g. private browsing)
   }
 }
+
+/**
+ * Safely parse JSON with schema validation.
+ * @param {string} key - Storage key
+ * @param {*} fallback - Default value
+ * @param {Function} validate - Validation function
+ * @returns {*}
+ */
+function safeGetJSON(key, fallback, validate) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw === null || raw === undefined) return fallback;
+    const parsed = JSON.parse(raw);
+    return validate(parsed) ? parsed : fallback;
+  } catch (e) {
+    return fallback;
+  }
+}
+
+// Validation functions for localStorage data
+const isValidNumber = (v) => typeof v === 'number' && !isNaN(v) && isFinite(v);
+const isValidString = (v) => typeof v === 'string';
+const isValidArray = (v) => Array.isArray(v);
+const isValidMode = (v) => ['classic', 'speed', 'zen', 'hardcore'].includes(v);
+const isValidTheme = (v) => ['neon', 'synthwave', 'cyberpunk', 'aurora', 'inferno', 'void'].includes(v);
 
 export const state = {
   running: false,
@@ -27,24 +63,24 @@ export const state = {
   baseSpeed: 20,
   maxSpeed: 42,
   score: 0,
-  coins: Number(safeGet('neonRunnerCoins', '0')),
+  coins: isValidNumber(Number(safeGet('neonRunnerCoins', '0'))) ? Number(safeGet('neonRunnerCoins', '0')) : 0,
   runCoins: 0,
-  best: Number(safeGet('neonRunnerBest', 0)),
+  best: isValidNumber(Number(safeGet('neonRunnerBest', 0))) ? Number(safeGet('neonRunnerBest', 0)) : 0,
   combo: 0,
   multiplier: 1,
   shield: false,
   magnet: false,
   magnetTimer: 0,
   shieldTimer: 0,
-  gameMode: safeGet('neonRunnerMode', 'classic'),
-  theme: safeGet('neonRunnerTheme', 'neon'),
-  character: Number(safeGet('neonRunnerChar', '0')),
-  gamesPlayed: Number(safeGet('neonRunnerGames', '0')),
-  gamesPlayedToday: Number(safeGet('neonRunnerGames_' + getTodayDate(), '0')),
-  unlockedAchievements: (() => { try { return JSON.parse(safeGet('neonRunnerAchievements', '[]')); } catch (e) { return []; } })(),
-  dailyBest: Number(safeGet('neonRunnerDaily_' + getTodayDate(), '0')),
-  streak: Number(safeGet('neonRunnerStreak', '0')),
-  lastPlayDate: safeGet('neonRunnerLastPlay', '')
+  gameMode: isValidMode(safeGet('neonRunnerMode', 'classic')) ? safeGet('neonRunnerMode', 'classic') : 'classic',
+  theme: isValidTheme(safeGet('neonRunnerTheme', 'neon')) ? safeGet('neonRunnerTheme', 'neon') : 'neon',
+  character: isValidNumber(Number(safeGet('neonRunnerChar', '0'))) ? Math.min(5, Math.max(0, Number(safeGet('neonRunnerChar', '0')))) : 0,
+  gamesPlayed: isValidNumber(Number(safeGet('neonRunnerGames', '0'))) ? Number(safeGet('neonRunnerGames', '0')) : 0,
+  gamesPlayedToday: isValidNumber(Number(safeGet('neonRunnerGames_' + getTodayDate(), '0'))) ? Number(safeGet('neonRunnerGames_' + getTodayDate(), '0')) : 0,
+  unlockedAchievements: safeGetJSON('neonRunnerAchievements', [], isValidArray),
+  dailyBest: isValidNumber(Number(safeGet('neonRunnerDaily_' + getTodayDate(), '0'))) ? Number(safeGet('neonRunnerDaily_' + getTodayDate(), '0')) : 0,
+  streak: isValidNumber(Number(safeGet('neonRunnerStreak', '0'))) ? Number(safeGet('neonRunnerStreak', '0')) : 0,
+  lastPlayDate: isValidString(safeGet('neonRunnerLastPlay', '')) ? safeGet('neonRunnerLastPlay', '') : ''
 };
 
 export function saveState() {

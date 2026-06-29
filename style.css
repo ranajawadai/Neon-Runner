@@ -13,21 +13,21 @@
   --surface-2:    #222222;
 
   /* ── Accent Colors ── */
-  --cyan:         #00ffcc;
-  --cyan-dim:     #00aa88;
-  --red:          #ff3333;
+  --cyan:         #33ffdd;
+  --cyan-dim:     #22ccaa;
+  --red:          #ff4444;
   --yellow:       #ffdd00;
   --white:        #ffffff;
-  --gray:         #888888;
+  --gray:         #999999;
 
   /* ── Text ── */
   --text-primary:   #ffffff;
-  --text-secondary: #aaaaaa;
-  --text-muted:     #555555;
+  --text-secondary: #bbbbbb;
+  --text-muted:     #777777;
 
   /* ── Glass ── */
   --glass-bg:       rgba(0, 0, 0, 0.85);
-  --glass-border:   rgba(255, 255, 255, 0.1);
+  --glass-border:   rgba(255, 255, 255, 0.15);
   --glass-blur:     20px;
 
   /* ── Spacing ── */
