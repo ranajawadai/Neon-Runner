@@ -148,7 +148,7 @@ function init() {
 function setupScene() {
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0a0a1a);
-  scene.fog = new THREE.FogExp2(0x0a0a1a, 0.003);
+  scene.fog = new THREE.FogExp2(0x0a0a1a, 0.002);
 }
 
 function setupCamera() {
@@ -192,9 +192,13 @@ function setupBloom() {
 }
 
 function createMaterials() {
-  // Obstacles — BRIGHT RED, unlit, always visible
-  obstacleMat = new THREE.MeshBasicMaterial({
+  // Obstacles — red, slight emissive for visibility
+  obstacleMat = new THREE.MeshStandardMaterial({
     color: 0xff2200,
+    emissive: 0xff2200,
+    emissiveIntensity: 0.2,
+    metalness: 0.3,
+    roughness: 0.4,
   });
 
   // Pre-create material variants for each obstacle type
@@ -203,18 +207,30 @@ function createMaterials() {
   obstacleMats.wall = obstacleMat;
   obstacleMats.spinner = obstacleMat;
   obstacleMats.slider = obstacleMat;
-  obstacleMats.laser = new THREE.MeshBasicMaterial({
+  obstacleMats.laser = new THREE.MeshStandardMaterial({
     color: 0xff0000,
+    emissive: 0xff0000,
+    emissiveIntensity: 0.3,
+    metalness: 0.3,
+    roughness: 0.4,
   });
 
-  // Coins — BRIGHT YELLOW, unlit
-  coinMat = new THREE.MeshBasicMaterial({
-    color: 0xffdd00,
+  // Coins — golden, slight emissive
+  coinMat = new THREE.MeshStandardMaterial({
+    color: 0xddaa00,
+    emissive: 0xddaa00,
+    emissiveIntensity: 0.2,
+    metalness: 0.5,
+    roughness: 0.3,
   });
 
-  // Player — BRIGHT CYAN, unlit
-  playerMat = new THREE.MeshBasicMaterial({
+  // Player
+  playerMat = new THREE.MeshStandardMaterial({
     color: 0x00ffcc,
+    emissive: 0x00ffcc,
+    emissiveIntensity: 0.3,
+    metalness: 0.3,
+    roughness: 0.4,
   });
 }
 
@@ -253,21 +269,21 @@ function buildLights() {
 // ═══════════════════════════════════════════════════════════════
 
 function buildGround() {
-  // Main ground plane
-  const groundGeo = new THREE.PlaneGeometry(60, 400);
+  // Main ground plane — VERY large so no edges visible
+  const groundGeo = new THREE.PlaneGeometry(200, 1000);
   const groundMat = new THREE.MeshBasicMaterial({
     color: 0x111122,
   });
   const ground = new THREE.Mesh(groundGeo, groundMat);
   ground.rotation.x = -Math.PI / 2;
-  ground.position.z = gridStartZ;
+  ground.position.z = -300;
   scene.add(ground);
 
-  // Grid overlay
-  grid = new THREE.GridHelper(400, 80, 0x00ffcc, 0x00ffcc);
+  // Grid overlay — very large
+  grid = new THREE.GridHelper(1000, 200, 0x00ffcc, 0x00ffcc);
   grid.material.transparent = true;
-  grid.material.opacity = 0.12;
-  grid.position.set(0, 0.02, gridStartZ);
+  grid.material.opacity = 0.1;
+  grid.position.set(0, 0.02, -300);
   scene.add(grid);
 }
 
@@ -314,8 +330,12 @@ function buildLaneMarkers() {
 function buildPlayer() {
   const char = CHARACTERS[state.character];
   const geo = getCharacterGeometry(char.shape, THREE);
-  playerMat = new THREE.MeshBasicMaterial({
+  playerMat = new THREE.MeshStandardMaterial({
     color: char.color,
+    emissive: char.color,
+    emissiveIntensity: 0.3,
+    metalness: 0.3,
+    roughness: 0.4,
   });
   player = new THREE.Mesh(geo, playerMat);
   player.position.set(0, GROUND_Y, 0);
@@ -392,43 +412,39 @@ function buildSpeedLines() {
 }
 
 function buildParallax() {
-  const colors = [0x081828, 0x060e18, 0x040a10];
-  const speeds = [0.3, 0.6, 1.0];
-  const heights = [12, 7, 4];
-  const widths = [160, 120, 70];
+  const colors = [0x0a0a1a, 0x080818, 0x060614];
+  const speeds = [0.2, 0.4, 0.7];
+  const heights = [15, 10, 6];
+  const widths = [200, 160, 100];
 
   for (let i = 0; i < 3; i++) {
-    // Background wall
+    // Background wall — large
     const geo = new THREE.PlaneGeometry(widths[i], heights[i]);
     const mat = new THREE.MeshBasicMaterial({
       color: colors[i],
-      transparent: true,
-      opacity: 0.6 - i * 0.12,
       side: THREE.DoubleSide,
     });
     const layer = new THREE.Mesh(geo, mat);
-    layer.position.set(0, heights[i] / 2, -120 - i * 40);
+    layer.position.set(0, heights[i] / 2, -150 - i * 50);
     layer.userData.speed = speeds[i];
     layer.userData.baseZ = layer.position.z;
     scene.add(layer);
     bgLayers.push(layer);
 
-    // Background structures — taller, more varied
-    for (let j = 0; j < 8; j++) {
-      const isSpire = Math.random() < 0.4;
-      const bWidth = isSpire ? 0.2 + Math.random() * 0.4 : 1.2 + Math.random() * 3.0;
-      const bHeight = 3 + Math.random() * 10;
-      const bGeo = new THREE.BoxGeometry(bWidth, bHeight, 0.5);
+    // Background structures
+    for (let j = 0; j < 10; j++) {
+      const isSpire = Math.random() < 0.3;
+      const bWidth = isSpire ? 0.3 + Math.random() * 0.5 : 1.5 + Math.random() * 4.0;
+      const bHeight = 4 + Math.random() * 12;
+      const bGeo = new THREE.BoxGeometry(bWidth, bHeight, 1);
       const bMat = new THREE.MeshBasicMaterial({
         color: colors[i],
-        transparent: true,
-        opacity: 0.35,
       });
       const building = new THREE.Mesh(bGeo, bMat);
       building.position.set(
-        (j - 3.5) * 12 + (Math.random() - 0.5) * 8,
+        (j - 4.5) * 14 + (Math.random() - 0.5) * 10,
         bHeight / 2,
-        -120 - i * 40
+        -150 - i * 50
       );
       building.userData.speed = speeds[i];
       building.userData.baseZ = building.position.z;
@@ -540,15 +556,17 @@ function applyTheme(themeId) {
   scene.background = new THREE.Color(t.bg);
   if (scene.fog) {
     scene.fog.color.set(t.fog);
-    if (scene.fog.density !== undefined) scene.fog.density = t.fogDensity || 0.003;
+    if (scene.fog.density !== undefined) scene.fog.density = t.fogDensity || 0.002;
   }
 
   grid.material.color.set(t.gridA);
-  grid.material.opacity = 0.12;
+  grid.material.opacity = 0.1;
 
-  // Update obstacle and coin colors (MeshBasicMaterial — no emissive)
+  // Update obstacle and coin colors
   obstacleMat.color.set(t.obstacle);
+  obstacleMat.emissive.set(t.obstacleEmissive || t.obstacle);
   coinMat.color.set(t.coin);
+  coinMat.emissive.set(t.coinEmissive || t.coin);
 
   if (ambientLight) {
     ambientLight.color.set(t.ambient || t.bg);
@@ -579,6 +597,7 @@ function applyTheme(themeId) {
 
   // Update player color
   playerMat.color.set(t.player);
+  playerMat.emissive.set(t.player);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1608,8 +1627,12 @@ function quitToMenu() {
 function rebuildPlayer() {
   const char = CHARACTERS[state.character];
   const geo = getCharacterGeometry(char.shape, THREE);
-  playerMat = new THREE.MeshBasicMaterial({
+  playerMat = new THREE.MeshStandardMaterial({
     color: char.color,
+    emissive: char.color,
+    emissiveIntensity: 0.3,
+    metalness: 0.3,
+    roughness: 0.4,
   });
   player.geometry.dispose();
   player.geometry = geo;
