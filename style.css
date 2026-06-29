@@ -382,8 +382,9 @@ body {
 
 .mode-btn:hover {
   border-color: rgba(51, 255, 221, 0.3);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   background: var(--glass-hover);
+  box-shadow: 0 6px 20px rgba(51, 255, 221, 0.08);
 }
 
 .mode-btn:hover::after {
@@ -393,6 +394,7 @@ body {
 .mode-btn.active {
   border-color: var(--cyan);
   background: rgba(51, 255, 221, 0.05);
+  box-shadow: 0 4px 15px rgba(51, 255, 221, 0.1);
 }
 
 .mode-btn.active::after {
@@ -559,7 +561,8 @@ body {
 }
 
 .challenge-item:hover {
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateX(2px);
 }
 
 .challenge-item.completed {
@@ -730,7 +733,8 @@ body {
 }
 
 .ach-card:hover {
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
 }
 
 .ach-card.unlocked {
@@ -850,7 +854,7 @@ body {
   z-index: 50;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.15s;
+  transition: opacity 0.2s ease-in-out;
 }
 
 .screen-transition.active {
@@ -1181,7 +1185,8 @@ body {
 }
 
 .lb-entry:hover {
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateX(2px);
 }
 
 .lb-entry.gold {
