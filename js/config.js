@@ -77,12 +77,12 @@ export const POWERUP_TYPES = [
 
 // ── Obstacle Definitions ────────────────────────────────────
 export const OBSTACLE_TYPES = {
-  cube:    { geo: 0, behavior: 'static',   hitbox: { x: 0.65, y: 0.65, z: 0.65 } },
-  pyramid: { geo: 1, behavior: 'static',   hitbox: { x: 0.5,  y: 0.7,  z: 0.5  } },
-  wall:    { geo: 2, behavior: 'static',   hitbox: { x: 1.0,  y: 0.45, z: 0.45 } },
-  laser:   { geo: 3, behavior: 'pulsing',  hitbox: { x: 1.5,  y: 0.2,  z: 0.2  } },
-  spinner: { geo: 4, behavior: 'spinning', hitbox: { x: 0.6,  y: 0.6,  z: 0.6  } },
-  slider:  { geo: 5, behavior: 'sliding',  hitbox: { x: 0.9,  y: 0.9,  z: 0.25 } },
+  cube:    { geo: 0, behavior: 'static',   hitbox: { x: 0.55, y: 0.55, z: 0.55 } },
+  pyramid: { geo: 1, behavior: 'static',   hitbox: { x: 0.4,  y: 0.6,  z: 0.4  } },
+  wall:    { geo: 2, behavior: 'static',   hitbox: { x: 0.8,  y: 0.35, z: 0.35 } },
+  laser:   { geo: 3, behavior: 'pulsing',  hitbox: { x: 1.2,  y: 0.15, z: 0.15 } },
+  spinner: { geo: 4, behavior: 'spinning', hitbox: { x: 0.5,  y: 0.5,  z: 0.5  } },
+  slider:  { geo: 5, behavior: 'sliding',  hitbox: { x: 0.7,  y: 0.7,  z: 0.2  } },
 };
 
 // ── Depth Zone Themes ───────────────────────────────────────
@@ -203,11 +203,11 @@ export const DAILY_CHALLENGES = [
 
 // ── Difficulty Tiers ────────────────────────────────────────
 export const DIFFICULTY_TIERS = [
-  { minScore: 0,     maxScore: 1000,  speed: 20, obstacleTypes: ['cube', 'pyramid', 'wall'],                         spawnRate: 1.0 },
-  { minScore: 1000,  maxScore: 3000,  speed: 25, obstacleTypes: ['cube', 'pyramid', 'wall', 'slider'],                spawnRate: 0.9 },
-  { minScore: 3000,  maxScore: 6000,  speed: 30, obstacleTypes: ['cube', 'pyramid', 'wall', 'spinner', 'slider'],     spawnRate: 0.8 },
-  { minScore: 6000,  maxScore: 10000, speed: 35, obstacleTypes: ['cube', 'pyramid', 'wall', 'laser', 'spinner', 'slider'], spawnRate: 0.7 },
-  { minScore: 10000, maxScore: Infinity, speed: 42, obstacleTypes: ['cube', 'pyramid', 'wall', 'laser', 'spinner', 'slider'], spawnRate: 0.6 },
+  { minScore: 0,     maxScore: 800,   speed: 20, obstacleTypes: ['cube', 'pyramid'],                             spawnRate: 1.2 },
+  { minScore: 800,   maxScore: 2000,  speed: 24, obstacleTypes: ['cube', 'pyramid', 'wall'],                     spawnRate: 1.0 },
+  { minScore: 2000,  maxScore: 4000,  speed: 28, obstacleTypes: ['cube', 'pyramid', 'wall', 'slider'],           spawnRate: 0.9 },
+  { minScore: 4000,  maxScore: 7000,  speed: 33, obstacleTypes: ['cube', 'pyramid', 'wall', 'spinner', 'slider'], spawnRate: 0.8 },
+  { minScore: 7000,  maxScore: Infinity, speed: 40, obstacleTypes: ['cube', 'pyramid', 'wall', 'laser', 'spinner', 'slider'], spawnRate: 0.7 },
 ];
 
 // ── Physics Constants ───────────────────────────────────────

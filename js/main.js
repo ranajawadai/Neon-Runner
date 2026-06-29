@@ -668,20 +668,20 @@ function spawnObstacle(x) {
 }
 
 function spawnCoinLine(x) {
-  const count = 3 + Math.floor(Math.random() * 4);
+  const count = 4 + Math.floor(Math.random() * 4);
   for (let i = 0; i < count; i++) {
     const c = getFromPool(coinPool, () => {
       const mesh = new THREE.Mesh(COIN_GEOMETRY, coinMat);
       scene.add(mesh);
       return mesh;
     });
-    resetCoin(c, x, i * 1.8);
+    resetCoin(c, x, i * 1.6);
     coins.push(c);
   }
 }
 
 function spawnPowerup() {
-  if (Math.random() > 0.07) return;
+  if (Math.random() > 0.09) return;
   if (!currentMode.powerups) return;
 
   const t = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)];
@@ -805,15 +805,15 @@ function updatePlayer(dt) {
   targetX = LANES[currentLane];
   const laneDiff = targetX - player.position.x;
 
-  // Spring-damped lane switching
-  if (Math.abs(laneDiff) > 0.003) {
-    const springSpeed = 38;
+  // Smooth spring-damped lane switching
+  if (Math.abs(laneDiff) > 0.002) {
+    const springSpeed = 42;
     player.position.x += Math.sign(laneDiff) * Math.min(Math.abs(laneDiff), springSpeed * dt);
   } else {
     player.position.x = targetX;
   }
 
-  // Jump physics
+  // Jump physics — snappy
   if (isJumping || player.position.y > GROUND_Y + 0.001) {
     velocityY += GRAVITY * dt;
     player.position.y += velocityY * dt;
