@@ -150,3 +150,62 @@ export function incrementGamesPlayed() {
   state.gamesPlayedToday++;
   saveState();
 }
+
+// ═══════════════════════════════════════════════════════════
+//  LEADERBOARD SYSTEM
+// ═══════════════════════════════════════════════════════════
+
+const LEADERBOARD_KEY = 'neonRunnerLeaderboard';
+const MAX_LEADERBOARD_ENTRIES = 10;
+
+/**
+ * Get leaderboard for a specific game mode.
+ * @param {string} mode - Game mode id
+ * @returns {Array} Top 10 entries
+ */
+export function getLeaderboard(mode) {
+  const all = safeGetJSON(LEADERBOARD_KEY, {}, isValidObject);
+  return (all[mode] || []).slice(0, MAX_LEADERBOARD_ENTRIES);
+}
+
+/**
+ * Add a score to the leaderboard.
+ * @param {string} mode - Game mode id
+ * @param {number} score - Score achieved
+ * @param {number} coins - Coins collected
+ * @returns {boolean} True if score made it to leaderboard
+ */
+export function addLeaderboardEntry(mode, score, coins) {
+  const all = safeGetJSON(LEADERBOARD_KEY, {}, isValidObject);
+  if (!all[mode]) all[mode] = [];
+
+  const entry = {
+    score: Math.floor(score),
+    coins: coins || 0,
+    date: new Date().toISOString(),
+  };
+
+  all[mode].push(entry);
+  all[mode].sort((a, b) => b.score - a.score);
+  all[mode] = all[mode].slice(0, MAX_LEADERBOARD_ENTRIES);
+
+  safeSet(LEADERBOARD_KEY, JSON.stringify(all));
+  return all[mode].some(e => e.score === entry.score && e.date === entry.date);
+}
+
+/**
+ * Get all leaderboards.
+ * @returns {Object} Leaderboards per mode
+ */
+export function getAllLeaderboards() {
+  return safeGetJSON(LEADERBOARD_KEY, {}, isValidObject);
+}
+
+/**
+ * Clear all leaderboards.
+ */
+export function clearLeaderboards() {
+  safeSet(LEADERBOARD_KEY, '{}');
+}
+
+const isValidObject = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);

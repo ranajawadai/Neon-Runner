@@ -179,14 +179,33 @@ export const CHARACTERS = [
 
 // ── Achievements ────────────────────────────────────────────
 export const ACHIEVEMENTS = [
+  // Score milestones
   { id: 'score1k',  name: 'First Dive',     desc: 'Score 1,000',               icon: '◆',  check: s => s.best >= 1000 },
   { id: 'score5k',  name: 'Deep Current',    desc: 'Score 5,000',               icon: '◈',  check: s => s.best >= 5000 },
   { id: 'score10k', name: 'Pressure Zone',   desc: 'Score 10,000',              icon: '◇',  check: s => s.best >= 10000 },
   { id: 'score25k', name: 'Abyss Walker',    desc: 'Score 25,000',              icon: '⬥',  check: s => s.best >= 25000 },
-  { id: 'coins100', name: 'Coin Hoarder',    desc: 'Collect 100 coins in one run', icon: '⬡', check: s => s.coins >= 100 },
-  { id: 'combo10',  name: 'Chain Master',    desc: 'Reach 10x combo',           icon: '◆',  check: s => s.combo >= 10 },
+  { id: 'score50k', name: 'Legend',           desc: 'Score 50,000',              icon: '⬡',  check: s => s.best >= 50000 },
+
+  // Coin milestones
+  { id: 'coins100', name: 'Coin Hoarder',    desc: 'Collect 100 coins in one run', icon: '◆', check: s => s.coins >= 100 },
+  { id: 'coins500', name: 'Gold Rush',        desc: 'Collect 500 coins total',   icon: '◈',  check: s => s.coins >= 500 },
+
+  // Combo milestones
+  { id: 'combo5',   name: 'Chain Starter',    desc: 'Reach 5x combo',            icon: '◇',  check: s => s.combo >= 5 },
+  { id: 'combo10',  name: 'Chain Master',    desc: 'Reach 10x combo',           icon: '⬥',  check: s => s.combo >= 10 },
+  { id: 'combo20',  name: 'Chain Legend',     desc: 'Reach 20x combo',           icon: '⬡',  check: s => s.combo >= 20 },
+
+  // Speed milestones
+  { id: 'speed2x',  name: 'Fast Lane',        desc: 'Reach 2x speed',            icon: '◆',  check: s => (s.speed / s.baseSpeed) >= 2 },
   { id: 'speed3x',  name: 'Velocity',        desc: 'Reach 3x speed',            icon: '◈',  check: s => (s.speed / s.baseSpeed) >= 3 },
+
+  // Games played
   { id: 'games10',  name: 'Dedicated',        desc: 'Play 10 games',             icon: '◇',  check: s => s.gamesPlayed >= 10 },
+  { id: 'games50',  name: 'Veteran',          desc: 'Play 50 games',             icon: '⬥',  check: s => s.gamesPlayed >= 50 },
+
+  // Special
+  { id: 'nearmiss10', name: 'Close Call',     desc: '10 near misses in one run', icon: '⬡',  check: s => s.combo >= 10 },
+  { id: 'perfect500', name: 'Perfect Run',    desc: 'Survive 500m without hit',  icon: '◆',  check: s => Math.floor(s.score / 10) >= 500 },
 ];
 
 // ── Daily Challenges ────────────────────────────────────────

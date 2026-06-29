@@ -127,8 +127,8 @@ describe('Config', () => {
   });
 
   describe('ACHIEVEMENTS', () => {
-    it('should have 8 achievements', () => {
-      expect(ACHIEVEMENTS).toHaveLength(8);
+    it('should have 16 achievements', () => {
+      expect(ACHIEVEMENTS).toHaveLength(16);
     });
 
     it('each achievement should have id, name, desc, and check', () => {

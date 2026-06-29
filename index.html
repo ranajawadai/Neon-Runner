@@ -107,7 +107,10 @@
         </div>
 
         <button id="start-btn" class="btn" aria-label="Start game">START</button>
-        <button id="achievements-btn" class="btn secondary small">ACHIEVEMENTS</button>
+        <div class="btn-row">
+          <button id="achievements-btn" class="btn secondary small">ACHIEVEMENTS</button>
+          <button id="leaderboard-btn" class="btn secondary small">LEADERBOARD</button>
+        </div>
 
         <div class="fps-info">
           <span class="fps-big">60</span>
@@ -170,6 +173,14 @@
       <h1 class="title small">ACHIEVEMENTS</h1>
       <div id="achievements-list" class="achievements-grid"></div>
       <button id="ach-back-btn" class="btn">BACK</button>
+    </div>
+
+    <!-- Leaderboard Screen -->
+    <div id="leaderboard-screen" class="overlay hidden">
+      <h1 class="title small">LEADERBOARD</h1>
+      <div id="leaderboard-modes" class="mode-selector"></div>
+      <div id="leaderboard-list" class="leaderboard-list"></div>
+      <button id="lb-back-btn" class="btn">BACK</button>
     </div>
 
     <div id="screen-transition" class="screen-transition"></div>

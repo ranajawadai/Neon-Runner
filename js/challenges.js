@@ -5,7 +5,7 @@ import { getTodayDate, getDailySeed, seededRandom } from './utils.js';
 import { state, addCoins } from './state.js';
 import { sfxPowerup } from './audio.js';
 
-function safeGet(key, fallback) {
+function storageGet(key, fallback) {
   try {
     const v = localStorage.getItem(key);
     return (v === null || v === undefined) ? fallback : v;
@@ -14,11 +14,11 @@ function safeGet(key, fallback) {
   }
 }
 
-function safeSet(key, value) {
+function storageSet(key, value) {
   try {
     localStorage.setItem(key, value);
   } catch (e) {
-    // localStorage unavailable (e.g. private browsing) - challenge progress will not persist this session
+    // localStorage unavailable
   }
 }
 
@@ -27,28 +27,28 @@ let dailyChallengeProgress = {};
 
 export function generateDailyChallenges() {
   const todayDate = getTodayDate();
-  const savedDate = safeGet('neonRunnerChallengeDate', null);
-  
+  const savedDate = storageGet('neonRunnerChallengeDate', null);
+
   if (savedDate === todayDate) {
     let saved = [];
-    try { saved = JSON.parse(safeGet('neonRunnerChallenges', '[]')); } catch (e) { saved = []; }
-    try { dailyChallengeProgress = JSON.parse(safeGet('neonRunnerChallengeProgress', '{}')); } catch (e) { dailyChallengeProgress = {}; }
+    try { saved = JSON.parse(storageGet('neonRunnerChallenges', '[]')); } catch (e) { saved = []; }
+    try { dailyChallengeProgress = JSON.parse(storageGet('neonRunnerChallengeProgress', '{}')); } catch (e) { dailyChallengeProgress = {}; }
     dailyChallenges = saved.map(c => {
       const original = DAILY_CHALLENGES.find(d => d.id === c.id);
       return original ? { ...original } : c;
     });
     return;
   }
-  
+
   const rng = seededRandom(getDailySeed());
   const shuffled = [...DAILY_CHALLENGES].sort(() => rng() - 0.5);
   dailyChallenges = shuffled.slice(0, 3);
   dailyChallengeProgress = {};
   dailyChallenges.forEach(c => { dailyChallengeProgress[c.id] = false; });
-  
-  safeSet('neonRunnerChallengeDate', todayDate);
-  safeSet('neonRunnerChallenges', JSON.stringify(dailyChallenges));
-  safeSet('neonRunnerChallengeProgress', JSON.stringify(dailyChallengeProgress));
+
+  storageSet('neonRunnerChallengeDate', todayDate);
+  storageSet('neonRunnerChallenges', JSON.stringify(dailyChallenges));
+  storageSet('neonRunnerChallengeProgress', JSON.stringify(dailyChallengeProgress));
 }
 
 export function checkDailyChallenges() {
@@ -61,7 +61,7 @@ export function checkDailyChallenges() {
   });
   if (rewards > 0) {
     addCoins(rewards);
-    safeSet('neonRunnerChallengeProgress', JSON.stringify(dailyChallengeProgress));
+    storageSet('neonRunnerChallengeProgress', JSON.stringify(dailyChallengeProgress));
     showChallengeComplete(rewards);
   }
 }

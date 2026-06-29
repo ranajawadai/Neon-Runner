@@ -10,7 +10,8 @@ import {
 
 import {
   state, saveState, resetGameState, updateStreak,
-  updateScore, addCoins, incrementGamesPlayed
+  updateScore, addCoins, incrementGamesPlayed,
+  getLeaderboard, addLeaderboardEntry
 } from './state.js';
 
 import {
@@ -1359,6 +1360,13 @@ function setupUI() {
     showScreen('achievements-screen');
   });
   document.getElementById('ach-back-btn').addEventListener('click', () => showScreen('start-screen'));
+
+  // Leaderboard
+  document.getElementById('leaderboard-btn').addEventListener('click', () => {
+    renderLeaderboard();
+    showScreen('leaderboard-screen');
+  });
+  document.getElementById('lb-back-btn').addEventListener('click', () => showScreen('start-screen'));
 }
 
 
@@ -1466,7 +1474,7 @@ function showScreen(id) {
 
   showScreenTimeout = setTimeout(() => {
     ['loading-screen', 'start-screen', 'pause-screen', 'settings-screen',
-     'game-over-screen', 'achievements-screen'].forEach(s => {
+     'game-over-screen', 'achievements-screen', 'leaderboard-screen'].forEach(s => {
       document.getElementById(s).classList.add('hidden');
     });
     if (id) document.getElementById(id).classList.remove('hidden');
@@ -1568,14 +1576,26 @@ function endGame() {
   checkAchievements();
   checkDailyChallenges();
   updateAnalytics();
+  addLeaderboardEntry(state.gameMode, state.score, state.runCoins);
   saveState();
   showShareButton();
 
   document.getElementById('hud').classList.add('hidden');
-  document.getElementById('final-score').textContent = Math.floor(state.score);
-  document.getElementById('final-coins').textContent = state.runCoins || 0;
-  document.getElementById('best-score').textContent = state.best;
-  document.getElementById('final-daily').textContent = state.dailyBest;
+  document.getElementById('final-score').textContent = Math.floor(state.score).toLocaleString();
+  document.getElementById('final-coins').textContent = (state.runCoins || 0).toLocaleString();
+  document.getElementById('best-score').textContent = state.best.toLocaleString();
+  document.getElementById('final-daily').textContent = state.dailyBest.toLocaleString();
+
+  // Show if new best
+  const isNewBest = Math.floor(state.score) >= state.best;
+  const bestLabel = document.querySelector('#best-score').parentElement;
+  if (bestLabel && isNewBest) {
+    bestLabel.style.color = '#ffcc00';
+    bestLabel.querySelector('span:first-child').textContent = '★ NEW BEST';
+  } else if (bestLabel) {
+    bestLabel.style.color = '';
+    bestLabel.querySelector('span:first-child').textContent = 'Best';
+  }
 
   const gameOverScreen = document.getElementById('game-over-screen');
   gameOverScreen.classList.remove('hidden');
@@ -1728,6 +1748,73 @@ function renderAchievements() {
   });
 }
 
+// ── LEADERBOARD ─────────────────────────────────────────────
+
+let currentLbMode = 'classic';
+
+function renderLeaderboard() {
+  // Build mode selector
+  const modeContainer = document.getElementById('leaderboard-modes');
+  modeContainer.innerHTML = '';
+
+  Object.values(GAME_MODES).forEach(mode => {
+    const btn = document.createElement('div');
+    btn.className = 'mode-btn' + (mode.id === currentLbMode ? ' active' : '');
+    btn.innerHTML = '<span class="mode-icon">' + mode.icon + '</span><span class="mode-name">' + mode.name + '</span>';
+    btn.addEventListener('click', () => {
+      currentLbMode = mode.id;
+      modeContainer.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderLeaderboardList();
+    });
+    modeContainer.appendChild(btn);
+  });
+
+  renderLeaderboardList();
+}
+
+function renderLeaderboardList() {
+  const list = document.getElementById('leaderboard-list');
+  list.innerHTML = '';
+
+  const entries = getLeaderboard(currentLbMode);
+
+  if (entries.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'lb-empty';
+    empty.textContent = 'No scores yet. Play a game!';
+    list.appendChild(empty);
+    return;
+  }
+
+  entries.forEach((entry, idx) => {
+    const row = document.createElement('div');
+    row.className = 'lb-entry' + (idx === 0 ? ' gold' : idx === 1 ? ' silver' : idx === 2 ? ' bronze' : '');
+
+    const rank = document.createElement('div');
+    rank.className = 'lb-rank';
+    rank.textContent = '#' + (idx + 1);
+
+    const score = document.createElement('div');
+    score.className = 'lb-score';
+    score.textContent = entry.score.toLocaleString();
+
+    const details = document.createElement('div');
+    details.className = 'lb-details';
+
+    const coins = document.createElement('span');
+    coins.textContent = entry.coins + ' coins';
+
+    const date = document.createElement('span');
+    const d = new Date(entry.date);
+    date.textContent = d.toLocaleDateString();
+
+    details.append(coins, date);
+    row.append(rank, score, details);
+    list.appendChild(row);
+  });
+}
+
 function triggerShake(intensity, duration) {
   shakeIntensity = intensity;
   shakeDuration = duration;
@@ -1835,15 +1922,39 @@ function captureScreenshot() {
 }
 
 function showShareButton() {
-  const btn = document.createElement('button');
-  btn.textContent = '◆ SCREENSHOT';
-  btn.className = 'btn small share-btn';
-  btn.addEventListener('click', () => {
+  const container = document.createElement('div');
+  container.className = 'share-container';
+  container.style.cssText = 'position:fixed;top:50%;right:16px;transform:translateY(-50%);z-index:101;display:flex;flex-direction:column;gap:6px;';
+
+  // Screenshot button
+  const screenshotBtn = document.createElement('button');
+  screenshotBtn.textContent = '◆ SCREENSHOT';
+  screenshotBtn.className = 'btn small';
+  screenshotBtn.style.cssText = 'padding:8px 16px;font-size:9px;';
+  screenshotBtn.addEventListener('click', () => {
     captureScreenshot();
-    btn.remove();
+    container.remove();
   });
-  document.body.appendChild(btn);
-  setTimeout(() => { if (btn.parentElement) btn.remove(); }, 5000);
+
+  // Copy score button
+  const copyBtn = document.createElement('button');
+  copyBtn.textContent = '◈ COPY SCORE';
+  copyBtn.className = 'btn small secondary';
+  copyBtn.style.cssText = 'padding:8px 16px;font-size:9px;';
+  copyBtn.addEventListener('click', () => {
+    const text = `Neon Runner: ${Math.floor(state.score)} points! Can you beat my score?`;
+    navigator.clipboard.writeText(text).then(() => {
+      copyBtn.textContent = '✓ COPIED!';
+      setTimeout(() => container.remove(), 1000);
+    }).catch(() => {
+      copyBtn.textContent = '✗ FAILED';
+      setTimeout(() => container.remove(), 1000);
+    });
+  });
+
+  container.append(screenshotBtn, copyBtn);
+  document.body.appendChild(container);
+  setTimeout(() => { if (container.parentElement) container.remove(); }, 6000);
 }
 
 // ═══════════════════════════════════════════════════════════════
