@@ -5,36 +5,36 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* ── Core Palette (AAA Cyberpunk) ── */
-  --void:         #000000;
-  --abyss:        #020408;
-  --deep:         #040a14;
-  --surface:      #0a1428;
-  --surface-2:    #0f1f3a;
+  /* ── Core Palette ── */
+  --void:         #020408;
+  --abyss:        #060c14;
+  --deep:         #0a1628;
+  --surface:      #0f1f35;
+  --surface-2:    #162a45;
 
-  /* ── Accent Colors (Neon) ── */
-  --cyan:         #00ffcc;
-  --cyan-bright:  #44ffdd;
-  --cyan-dim:     #00aa88;
-  --cyan-glow:    rgba(0, 255, 204, 0.5);
-  --magenta:      #ff0066;
-  --magenta-glow: rgba(255, 0, 102, 0.45);
-  --amber:        #ffcc00;
-  --amber-glow:   rgba(255, 204, 0, 0.5);
-  --red:          #ff0044;
-  --green:        #00ff88;
+  /* ── Accent Colors ── */
+  --cyan:         #3dd4c0;
+  --cyan-bright:  #5eddb8;
+  --cyan-dim:     #2a9a88;
+  --cyan-glow:    rgba(61, 212, 192, 0.35);
+  --magenta:      #cc4488;
+  --magenta-glow: rgba(204, 68, 136, 0.3);
+  --amber:        #e8a630;
+  --amber-glow:   rgba(232, 166, 48, 0.35);
+  --red:          #dd3355;
+  --green:        #33cc88;
 
   /* ── Text ── */
-  --text-primary:   #eafff8;
-  --text-secondary: rgba(234, 255, 248, 0.5);
-  --text-muted:     rgba(234, 255, 248, 0.2);
+  --text-primary:   #e0f0ec;
+  --text-secondary: rgba(224, 240, 236, 0.55);
+  --text-muted:     rgba(224, 240, 236, 0.25);
   --text-accent:    var(--cyan);
 
   /* ── Glass ── */
-  --glass-bg:       rgba(4, 10, 20, 0.8);
-  --glass-border:   rgba(0, 255, 204, 0.1);
-  --glass-hover:    rgba(0, 255, 204, 0.06);
-  --glass-blur:     20px;
+  --glass-bg:       rgba(8, 18, 35, 0.75);
+  --glass-border:   rgba(61, 212, 192, 0.12);
+  --glass-hover:    rgba(61, 212, 192, 0.08);
+  --glass-blur:     16px;
 
   /* ── Spacing ── */
   --radius-sm:    8px;
@@ -125,9 +125,9 @@ body {
 .hud-value {
   font-family: 'Orbitron', monospace;
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--cyan);
-  text-shadow: 0 0 15px var(--cyan-glow), 0 0 40px rgba(0, 255, 204, 0.2);
+  text-shadow: 0 0 10px var(--cyan-glow);
   line-height: 1.1;
 }
 
@@ -229,14 +229,13 @@ body {
 .title {
   font-family: 'Orbitron', monospace;
   font-size: 62px;
-  font-weight: 900;
-  letter-spacing: 6px;
+  font-weight: 800;
+  letter-spacing: 4px;
   color: var(--cyan);
   text-shadow:
-    0 0 20px var(--cyan-glow),
-    0 0 60px rgba(0, 255, 204, 0.2),
-    0 0 120px rgba(0, 255, 204, 0.08),
-    0 2px 4px rgba(0, 0, 0, 0.8);
+    0 0 15px var(--cyan-glow),
+    0 0 40px rgba(61, 212, 192, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.6);
   margin-bottom: 6px;
   position: relative;
   z-index: 1;
@@ -245,18 +244,17 @@ body {
 .title span {
   color: var(--magenta);
   text-shadow:
-    0 0 20px var(--magenta-glow),
-    0 0 60px rgba(255, 0, 102, 0.15),
-    0 0 120px rgba(255, 0, 102, 0.06);
+    0 0 15px var(--magenta-glow),
+    0 0 40px rgba(204, 68, 136, 0.1);
 }
 
 .title.small {
   font-size: 36px;
-  letter-spacing: 4px;
+  letter-spacing: 3px;
   color: var(--amber);
   text-shadow:
-    0 0 16px var(--amber-glow),
-    0 0 50px rgba(255, 204, 0, 0.12);
+    0 0 12px var(--amber-glow),
+    0 0 30px rgba(232, 166, 48, 0.1);
 }
 
 .subtitle {
@@ -274,22 +272,21 @@ body {
 .btn {
   position: relative;
   overflow: hidden;
-  padding: 16px 52px;
+  padding: 14px 48px;
   font-family: 'Orbitron', monospace;
   font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 4px;
-  color: #000;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: #0a1a18;
   background: linear-gradient(135deg, var(--cyan) 0%, var(--cyan-bright) 100%);
   border: none;
   border-radius: var(--radius-pill);
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow:
-    0 0 25px var(--cyan-glow),
-    0 0 60px rgba(0, 255, 204, 0.15),
-    0 4px 20px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 0 15px var(--cyan-glow),
+    0 4px 15px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
   z-index: 1;
 }
 
@@ -809,8 +806,8 @@ body {
 .near-miss-flash {
   position: fixed;
   inset: 0;
-  border: 3px solid rgba(0, 255, 204, 0.6);
-  box-shadow: inset 0 0 100px rgba(0, 255, 204, 0.2), inset 0 0 200px rgba(0, 255, 204, 0.05);
+  border: 2px solid rgba(61, 212, 192, 0.4);
+  box-shadow: inset 0 0 60px rgba(61, 212, 192, 0.1);
   pointer-events: none;
   z-index: 15;
   opacity: 0;
@@ -847,17 +844,17 @@ body {
 .powerup-badge.active { opacity: 1; }
 
 .powerup-badge.shield {
-  background: rgba(0, 255, 136, 0.15);
-  border: 1px solid rgba(0, 255, 136, 0.5);
+  background: rgba(51, 204, 136, 0.12);
+  border: 1px solid rgba(51, 204, 136, 0.4);
   color: var(--green);
-  box-shadow: 0 0 15px rgba(0, 255, 136, 0.3), 0 0 40px rgba(0, 255, 136, 0.1);
+  box-shadow: 0 0 10px rgba(51, 204, 136, 0.2);
 }
 
 .powerup-badge.magnet {
-  background: rgba(255, 0, 102, 0.15);
-  border: 1px solid rgba(255, 0, 102, 0.5);
+  background: rgba(204, 68, 136, 0.12);
+  border: 1px solid rgba(204, 68, 136, 0.4);
   color: var(--magenta);
-  box-shadow: 0 0 15px var(--magenta-glow), 0 0 40px rgba(255, 0, 102, 0.1);
+  box-shadow: 0 0 10px var(--magenta-glow);
 }
 
 .powerup-badge .timer {
@@ -870,10 +867,10 @@ body {
 .score-fly {
   position: fixed;
   font-family: 'Orbitron', monospace;
-  font-size: 22px;
-  font-weight: 900;
+  font-size: 20px;
+  font-weight: 800;
   color: var(--amber);
-  text-shadow: 0 0 15px var(--amber-glow), 0 0 40px rgba(255, 204, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 0 10px var(--amber-glow), 0 2px 4px rgba(0, 0, 0, 0.6);
   pointer-events: none;
   z-index: 25;
   animation: scoreFly 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
@@ -903,11 +900,11 @@ body {
 
 /* ── Combo Pulse ── */
 .combo-pulse {
-  animation: comboPulse 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: comboPulse 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes comboPulse {
-  0%   { transform: scale(1.6); color: var(--amber); text-shadow: 0 0 20px var(--amber-glow); }
+  0%   { transform: scale(1.3); color: var(--amber); }
   100% { transform: scale(1); }
 }
 

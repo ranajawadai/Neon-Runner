@@ -36,6 +36,9 @@ let powerups = [];
 // Lane markers (visual guides on the ground)
 let laneMarkers = [];
 
+// Player shadow
+let playerShadow = null;
+
 let currentLane = 1;
 let targetX = 0;
 let velocityY = 0;
@@ -144,8 +147,8 @@ function init() {
 
 function setupScene() {
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x040810);
-  scene.fog = new THREE.FogExp2(0x0a1628, 0.006);
+  scene.background = new THREE.Color(0x0a1e2e);
+  scene.fog = new THREE.FogExp2(0x1a3a4a, 0.007);
 }
 
 function setupCamera() {
@@ -181,20 +184,20 @@ function setupBloom() {
 
   bloomPass = new THREE.UnrealBloomPass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
-    1.2,   // strength — intense neon glow
-    0.6,   // radius — wide spread for cinematic feel
-    0.35   // threshold — more things bloom
+    0.6,   // strength — subtle glow, not overwhelming
+    0.4,   // radius — moderate spread
+    0.6    // threshold — only bright things bloom
   );
   composer.addPass(bloomPass);
 }
 
 function createMaterials() {
   obstacleMat = new THREE.MeshStandardMaterial({
-    color: 0xff2255,
-    emissive: 0xff1144,
-    emissiveIntensity: 1.0,
-    metalness: 0.5,
-    roughness: 0.2,
+    color: 0xff3355,
+    emissive: 0xff2244,
+    emissiveIntensity: 0.5,
+    metalness: 0.4,
+    roughness: 0.3,
   });
 
   // Pre-create material variants for each obstacle type — no more clone per spawn
@@ -204,27 +207,27 @@ function createMaterials() {
   obstacleMats.spinner = obstacleMat;
   obstacleMats.slider = obstacleMat;
   obstacleMats.laser = new THREE.MeshStandardMaterial({
-    color: 0xff0044,
-    emissive: 0xff0044,
-    emissiveIntensity: 1.8,
-    metalness: 0.6,
-    roughness: 0.15,
+    color: 0xff2244,
+    emissive: 0xff2244,
+    emissiveIntensity: 0.8,
+    metalness: 0.4,
+    roughness: 0.3,
   });
 
   coinMat = new THREE.MeshStandardMaterial({
-    color: 0x00ffcc,
-    emissive: 0x00ddaa,
-    emissiveIntensity: 1.0,
-    metalness: 0.8,
-    roughness: 0.15,
+    color: 0x44ddcc,
+    emissive: 0x33bbaa,
+    emissiveIntensity: 0.5,
+    metalness: 0.6,
+    roughness: 0.25,
   });
 
   playerMat = new THREE.MeshStandardMaterial({
-    color: 0x00ffcc,
-    emissive: 0x00ffcc,
-    emissiveIntensity: 1.2,
-    metalness: 0.6,
-    roughness: 0.15,
+    color: 0x33ddcc,
+    emissive: 0x33ddcc,
+    emissiveIntensity: 0.6,
+    metalness: 0.5,
+    roughness: 0.2,
   });
 }
 
@@ -235,25 +238,25 @@ function createMaterials() {
 
 function buildLights() {
   // Hemisphere light — natural sky/ground ambient
-  hemiLight = new THREE.HemisphereLight(0x0a2040, 0x020408, 0.4);
+  hemiLight = new THREE.HemisphereLight(0x3a5a7a, 0x0a1520, 0.6);
   scene.add(hemiLight);
 
-  // Ambient fill — very subtle
-  ambientLight = new THREE.AmbientLight(0x0a1a30, 0.5);
+  // Ambient fill
+  ambientLight = new THREE.AmbientLight(0x2a3a5a, 0.7);
   scene.add(ambientLight);
 
   // Main directional — overhead key light
-  dirLight = new THREE.DirectionalLight(0xeeffff, 0.6);
+  dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
   dirLight.position.set(4, 14, 6);
   scene.add(dirLight);
 
-  // Cyan accent — ahead of player (primary glow)
-  accentLightA = new THREE.PointLight(0x00ffcc, 2.0, 60);
+  // Cyan accent — ahead of player
+  accentLightA = new THREE.PointLight(0x44ddcc, 1.0, 50);
   accentLightA.position.set(0, 6, -12);
   scene.add(accentLightA);
 
-  // Magenta accent — behind player (secondary glow)
-  accentLightB = new THREE.PointLight(0xff0066, 1.2, 40);
+  // Warm accent — behind player
+  accentLightB = new THREE.PointLight(0xffaa44, 0.6, 35);
   accentLightB.position.set(0, 4, 8);
   scene.add(accentLightB);
 }
@@ -264,43 +267,43 @@ function buildLights() {
 // ═══════════════════════════════════════════════════════════════
 
 function buildGround() {
-  // Main ground plane — deep dark with subtle gradient
+  // Main ground plane
   const groundGeo = new THREE.PlaneGeometry(60, 400);
   const groundMat = new THREE.MeshStandardMaterial({
-    color: 0x040810,
-    metalness: 0.5,
-    roughness: 0.6,
-    envMapIntensity: 0.3,
+    color: 0x0e2a38,
+    metalness: 0.3,
+    roughness: 0.7,
+    envMapIntensity: 0.4,
   });
   const ground = new THREE.Mesh(groundGeo, groundMat);
   ground.rotation.x = -Math.PI / 2;
   ground.position.z = gridStartZ;
   scene.add(ground);
 
-  // Grid overlay — crisp neon lines
-  grid = new THREE.GridHelper(400, 80, 0x00ffcc, 0x004466);
+  // Grid overlay
+  grid = new THREE.GridHelper(400, 80, 0x44ddcc, 0x2a8a7a);
   grid.material.transparent = true;
-  grid.material.opacity = 0.22;
+  grid.material.opacity = 0.15;
   grid.position.set(0, 0.02, gridStartZ);
   scene.add(grid);
 }
 
 function buildLaneMarkers() {
-  // Glowing lane dividers — neon lines
+  // Lane dividers
   const markerMat = new THREE.MeshBasicMaterial({
-    color: 0x00ffcc,
+    color: 0x44ddcc,
     transparent: true,
-    opacity: 0.12,
+    opacity: 0.08,
   });
 
   // Two divider lines between 3 lanes
   const dividers = [
-    (LANES[0] + LANES[1]) / 2,  // between left and center
-    (LANES[1] + LANES[2]) / 2,  // between center and right
+    (LANES[0] + LANES[1]) / 2,
+    (LANES[1] + LANES[2]) / 2,
   ];
 
   dividers.forEach(x => {
-    const geo = new THREE.PlaneGeometry(0.05, 300);
+    const geo = new THREE.PlaneGeometry(0.04, 300);
     const marker = new THREE.Mesh(geo, markerMat.clone());
     marker.rotation.x = -Math.PI / 2;
     marker.position.set(x, 0.03, gridStartZ);
@@ -308,15 +311,14 @@ function buildLaneMarkers() {
     laneMarkers.push(marker);
   });
 
-  // Lane center indicators — subtle dots
+  // Lane center indicators
   LANES.forEach(x => {
-    const dotGeo = new THREE.CircleGeometry(0.1, 12);
+    const dotGeo = new THREE.CircleGeometry(0.08, 12);
     const dotMat = new THREE.MeshBasicMaterial({
-      color: 0x00ffcc,
+      color: 0x44ddcc,
       transparent: true,
-      opacity: 0.15,
+      opacity: 0.1,
     });
-    // Place a series of dots down the lane
     for (let z = -5; z > -80; z -= 8) {
       const dot = new THREE.Mesh(dotGeo, dotMat.clone());
       dot.rotation.x = -Math.PI / 2;
@@ -333,7 +335,7 @@ function buildPlayer() {
   const mat = new THREE.MeshStandardMaterial({
     color: char.color,
     emissive: char.color,
-    emissiveIntensity: 0.9,
+    emissiveIntensity: 0.5,
     metalness: 0.5,
     roughness: 0.2,
   });
@@ -342,20 +344,33 @@ function buildPlayer() {
   player.position.set(0, GROUND_Y, 0);
   scene.add(player);
 
+  // Player shadow — circular shadow on ground
+  const shadowGeo = new THREE.CircleGeometry(0.8, 24);
+  const shadowMat = new THREE.MeshBasicMaterial({
+    color: 0x000000,
+    transparent: true,
+    opacity: 0.3,
+    depthWrite: false,
+  });
+  playerShadow = new THREE.Mesh(shadowGeo, shadowMat);
+  playerShadow.rotation.x = -Math.PI / 2;
+  playerShadow.position.set(0, 0.02, 0);
+  scene.add(playerShadow);
+
   // Glow shell — slightly larger transparent shell
   const glowGeo = getCharacterGeometry(char.shape, THREE);
-  glowGeo.scale(1.5, 1.5, 1.5);
+  glowGeo.scale(1.3, 1.3, 1.3);
   const glowMat = new THREE.MeshBasicMaterial({
     color: char.color,
     transparent: true,
-    opacity: 0.1,
+    opacity: 0.06,
     side: THREE.BackSide,
   });
   const glow = new THREE.Mesh(glowGeo, glowMat);
   player.add(glow);
 
-  // Player point light
-  const pl = new THREE.PointLight(char.color, 1.0, 10);
+  // Player point light — subtle
+  const pl = new THREE.PointLight(char.color, 0.5, 8);
   player.add(pl);
 }
 
@@ -852,6 +867,16 @@ function updatePlayer(dt) {
   // Rotation — subtle spin
   player.rotation.y += dt * 2.0;
   player.rotation.x += dt * 1.0;
+
+  // Update shadow position and scale based on height
+  if (playerShadow) {
+    playerShadow.position.x = player.position.x;
+    playerShadow.position.z = player.position.z;
+    const heightAboveGround = Math.max(0, player.position.y - GROUND_Y);
+    const shadowScale = Math.max(0.3, 1 - heightAboveGround * 0.15);
+    playerShadow.scale.set(shadowScale, shadowScale, 1);
+    playerShadow.material.opacity = 0.3 * shadowScale;
+  }
 }
 
 function updateObstacles(dt, dz, px, py, pz) {
@@ -1630,7 +1655,7 @@ function rebuildPlayer() {
   const mat = new THREE.MeshStandardMaterial({
     color: char.color,
     emissive: char.color,
-    emissiveIntensity: 0.9,
+    emissiveIntensity: 0.5,
     metalness: 0.5,
     roughness: 0.2,
   });
@@ -1647,15 +1672,20 @@ function rebuildPlayer() {
   });
 
   const glowGeo = getCharacterGeometry(char.shape, THREE);
-  glowGeo.scale(1.5, 1.5, 1.5);
+  glowGeo.scale(1.3, 1.3, 1.3);
   const glowMat = new THREE.MeshBasicMaterial({
     color: char.color,
     transparent: true,
-    opacity: 0.1,
+    opacity: 0.06,
     side: THREE.BackSide,
   });
   player.add(new THREE.Mesh(glowGeo, glowMat));
-  player.add(new THREE.PointLight(char.color, 1.0, 10));
+  player.add(new THREE.PointLight(char.color, 0.5, 8));
+
+  // Update shadow color
+  if (playerShadow) {
+    playerShadow.material.color.set(0x000000);
+  }
 }
 
 
@@ -1675,14 +1705,14 @@ function showMilestone(distance) {
   const el = document.createElement('div');
   el.textContent = distance + 'm!';
   el.style.cssText = 'position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);' +
-    'font-family:Orbitron,monospace;font-size:52px;font-weight:900;letter-spacing:4px;color:#00ffcc;' +
-    'text-shadow:0 0 20px #00ffcc,0 0 60px #00aa88,0 0 120px #006644;pointer-events:none;z-index:100;' +
+    'font-family:Orbitron,monospace;font-size:48px;font-weight:800;letter-spacing:3px;color:#3dd4c0;' +
+    'text-shadow:0 0 15px #3dd4c0,0 0 30px #2a9a88;pointer-events:none;z-index:100;' +
     'transition:all 0.8s cubic-bezier(0.22,1,0.36,1);opacity:1;';
   document.body.appendChild(el);
   requestAnimationFrame(() => {
     el.style.top = '20%';
     el.style.opacity = '0';
-    el.style.transform = 'translate(-50%,-50%) scale(1.4)';
+    el.style.transform = 'translate(-50%,-50%) scale(1.3)';
   });
   setTimeout(() => el.remove(), 900);
 }
